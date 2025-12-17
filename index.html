@@ -1,0 +1,1368 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>豆・ZIPS・グッズ｜年別 月次グラフ（5つ）</title>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <!-- PDF export -->
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+
+  <style>
+    *{ box-sizing:border-box; }
+    :root{
+      --bg1:#2b1b12; --bg2:#1f120c;
+      --card:#fff8ef; --card2:#fff3e1;
+      --text:#2a1a12; --muted:#6e574b;
+      --line:rgba(42,26,18,.14);
+      --shadow:0 16px 34px rgba(0,0,0,.28);
+      --accent:#7a1f2b; --accent2:#5f1620;
+      --danger:#b23a3a;
+      --radius:16px;
+    }
+    body{
+      margin:0;
+      font-family: system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      background: radial-gradient(1200px 500px at 10% -10%, rgba(255,255,255,.07), transparent 60%),
+                  linear-gradient(160deg,var(--bg1),var(--bg2));
+      color:#fff;
+    }
+    header{
+      position:sticky; top:0; z-index:20;
+      background: linear-gradient(180deg, rgba(0,0,0,.55), rgba(0,0,0,.25));
+      backdrop-filter: blur(10px);
+      border-bottom:1px solid rgba(255,255,255,.08);
+    }
+    .header-inner{
+      max-width:1200px; margin:0 auto;
+      padding:12px 14px;
+      display:flex; gap:12px; flex-wrap:wrap;
+      align-items:center; justify-content:space-between;
+    }
+    .brand{ display:flex; gap:10px; align-items:baseline; font-weight:900; }
+    .brand small{ opacity:.75; font-weight:700; }
+    .controls{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    .pill{
+      background: rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:999px;
+      padding:8px 10px;
+      display:flex; gap:8px; align-items:center;
+    }
+    .pill label{ font-size:12px; opacity:.9; }
+    input[type="text"], input[type="number"]{
+      font: inherit;
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,.18);
+      background: rgba(0,0,0,.22);
+      color:#fff;
+      padding:8px 10px;
+      outline:none;
+    }
+    input[type="number"]{ width:90px; text-align:right; }
+    button{
+      font: inherit;
+      cursor:pointer;
+      border:0;
+      border-radius:12px;
+      padding:10px 12px;
+      color:#fff;
+      background: linear-gradient(180deg, var(--accent), var(--accent2));
+      box-shadow: 0 10px 22px rgba(0,0,0,.25);
+      white-space:nowrap;
+    }
+    button.secondary{
+      background: rgba(255,255,255,.10);
+      border:1px solid rgba(255,255,255,.16);
+      box-shadow:none;
+    }
+    button.danger{ background: rgba(178,58,58,.88); }
+
+    main{ max-width:1200px; margin:0 auto; padding:14px; }
+    .grid{ display:grid; grid-template-columns: 1fr; gap:12px; }
+
+    .card{
+      background: linear-gradient(180deg,var(--card),var(--card2));
+      color:var(--text);
+      border:1px solid rgba(255,255,255,.28);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .card-head{
+      padding:12px 14px;
+      display:flex; gap:10px; flex-wrap:wrap;
+      align-items:center; justify-content:space-between;
+      border-bottom:1px solid var(--line);
+    }
+    .card-title{ font-weight:900; letter-spacing:.02em; }
+    .card-sub{ font-size:12px; color:var(--muted); }
+    .card-body{ padding:12px 14px; }
+
+    .row-tools{
+      display:flex; gap:10px; flex-wrap:wrap; align-items:center;
+      margin:0 0 10px;
+    }
+
+    .table-wrap{
+      overflow:auto;
+      border:1px solid rgba(42,26,18,.12);
+      border-radius:12px;
+      background:#fff;
+    }
+    table{
+      width:max-content; min-width:100%;
+      border-collapse:separate;
+      border-spacing:0;
+      color:var(--text);
+      font-size:13px;
+    }
+    th, td{
+      border-bottom:1px solid rgba(42,26,18,.10);
+      border-right:1px solid rgba(42,26,18,.08);
+      padding:8px 8px;
+      white-space:nowrap;
+    }
+    th:first-child, td:first-child{
+      position:sticky; left:0; background:#fff; z-index:2;
+      min-width:220px;
+    }
+    thead th{
+      position:sticky; top:0; z-index:3;
+      background:#fff;
+      font-size:12px; color:var(--muted);
+    }
+    thead th:first-child{ z-index:4; }
+
+    .name-cell{ display:flex; align-items:center; gap:8px; }
+    .name-chip{
+      width:10px; height:10px; border-radius:999px;
+      border:1px solid rgba(0,0,0,.18);
+      flex:0 0 auto;
+    }
+    .name-text{ font-weight:800; }
+    .name-input{
+      width: 100%;
+      border:1px solid rgba(42,26,18,.18) !important;
+      background:#fff !important;
+      color:var(--text) !important;
+      padding:7px 8px !important;
+      border-radius:10px !important;
+      outline:none !important;
+    }
+    .num-input{
+      width:86px;
+      border:1px solid rgba(42,26,18,.18) !important;
+      background:#fff !important;
+      color:var(--text) !important;
+      padding:7px 8px !important;
+      border-radius:10px !important;
+      outline:none !important;
+      text-align:right;
+    }
+    .icon-btn{
+      border:1px solid rgba(42,26,18,.18);
+      background:#fff;
+      color:var(--text);
+      border-radius:10px;
+      padding:6px 8px;
+      cursor:pointer;
+      font-weight:800;
+    }
+    .icon-btn.danger{
+      border-color: rgba(178,58,58,.35);
+      color:#8b1d1d;
+    }
+
+    .charts{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:12px;
+    }
+    @media (min-width: 980px){
+      .charts{ grid-template-columns: 1fr 1fr; }
+    }
+    .chart-box{
+      background:#fff;
+      border:1px solid rgba(42,26,18,.12);
+      border-radius:14px;
+      padding:10px;
+      min-height:270px;
+    }
+
+    /* PDF area (portrait A4) */
+    .pdf-pages{
+      display:none;
+      width: 700px;
+      background:#fff;
+      color:#111;
+      padding:28px;
+    }
+    .pdf-title{
+      font-weight:900;
+      font-size:16px;
+      margin:0 0 8px;
+    }
+    .pdf-sub{
+      font-size:11px;
+      color:#333;
+      margin:0 0 10px;
+    }
+    .pdf-col{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:12px;
+    }
+    .pdf-card{
+      border:1px solid rgba(0,0,0,.12);
+      border-radius:12px;
+      padding:12px;
+      min-height:230px;
+    }
+    .pdf-card canvas{ width:100% !important; height:180px !important; }
+    .pdf-card.tall{ min-height:320px; }
+    .pdf-card.tall canvas{ height:240px !important; }
+
+    .toast{
+      position:fixed; left:50%; bottom:18px; transform:translateX(-50%);
+      background: rgba(0,0,0,.70);
+      color:#fff;
+      padding:10px 12px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.14);
+      opacity:0; pointer-events:none;
+      transition: opacity .18s ease;
+      max-width:min(92vw, 820px);
+      white-space:nowrap;
+      overflow:hidden; text-overflow:ellipsis;
+    }
+    .toast.show{ opacity:1; }
+    .footer-note{
+      opacity:.85;
+      font-size:12px;
+      margin:12px 2px 0;
+    }
+  </style>
+</head>
+
+<body>
+<header>
+  <div class="header-inner">
+    <div class="brand">
+      豆・ZIPS・グッズ <small>年別 月次グラフ（5つ）</small>
+    </div>
+
+    <div class="controls">
+      <div class="pill">
+        <label for="yearInput">年（手入力）</label>
+        <input id="yearInput" type="number" inputmode="numeric" placeholder="例：2025" min="2000" max="2100" />
+      </div>
+
+      <button id="btnLoadYear" class="secondary">この年を開く</button>
+      <button id="btnSave">保存</button>
+      <button id="btnRender" class="secondary">グラフ更新</button>
+      <button id="btnClearYear" class="danger">この年をリセット</button>
+      <button id="btnPdf" class="secondary">PDF出力（A4縦/2ページ）</button>
+
+      <button id="quickAddBeansSeasonal" class="secondary">＋豆シーズナル</button>
+      <button id="quickAddZ8Seasonal" class="secondary">＋Z8シーズナル</button>
+      <button id="quickAddZ1Seasonal" class="secondary">＋Z1シーズナル</button>
+      <button id="quickAddGoods" class="secondary">＋グッズ</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="grid">
+
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-title">月次棒グラフ（5つ）</div>
+          <div class="card-sub">
+            ①豆200g＋ZIPS合計（200g / ZIPS8P / ZIPS1P）＋ 売上（千円）折れ線｜
+            ②豆200g（商品別、指定色固定。シーズナルは合計1枠）｜
+            ③ZIPS（8P）（商品別、指定色固定。シーズナルは合計1枠）｜
+            ④ZIPS（1P）（商品別、指定色固定。シーズナルは合計1枠）｜
+            ⑤グッズ（名称別：ハニー固定＋他は薄くなるグレー）
+          </div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="charts">
+          <div class="chart-box"><canvas id="chartCombo"></canvas></div>
+          <div class="chart-box"><canvas id="chartBeans200"></canvas></div>
+          <div class="chart-box"><canvas id="chartZips8"></canvas></div>
+          <div class="chart-box"><canvas id="chartZips1"></canvas></div>
+          <div class="chart-box"><canvas id="chartGoods"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ✅ 売上入力（千円）: 記入欄の一番上 -->
+    <section class="card" id="sec-sales">
+      <div class="card-head">
+        <div>
+          <div class="card-title">売上（千円）</div>
+          <div class="card-sub">①のグラフに黒い折れ線で出す（例：120 = 12万円）</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="table-wrap" id="tableWrapSales"></div>
+      </div>
+    </section>
+
+    <section class="card" id="sec-beans200">
+      <div class="card-head">
+        <div>
+          <div class="card-title">豆 200g（固定＋シーズナル複数）</div>
+          <div class="card-sub">シーズナルは何個でも追加OK（グラフでは「シーズナル合計」1枠）</div>
+        </div>
+        <div class="row-tools">
+          <button class="secondary" id="addSeasonalBeans200">シーズナル追加</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="table-wrap" id="tableWrapBeans200"></div>
+      </div>
+    </section>
+
+    <section class="card" id="sec-zips8">
+      <div class="card-head">
+        <div>
+          <div class="card-title">ZIPS（8P）（固定＋シーズナル複数）</div>
+          <div class="card-sub">シーズナルは何個でも追加OK（グラフでは「シーズナル合計」1枠）</div>
+        </div>
+        <div class="row-tools">
+          <button class="secondary" id="addSeasonalZips8">シーズナル追加</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="table-wrap" id="tableWrapZips8"></div>
+      </div>
+    </section>
+
+    <section class="card" id="sec-zips1">
+      <div class="card-head">
+        <div>
+          <div class="card-title">ZIPS（1P）（固定＋シーズナル複数）</div>
+          <div class="card-sub">シーズナルは何個でも追加OK（グラフでは「シーズナル合計」1枠）</div>
+        </div>
+        <div class="row-tools">
+          <button class="secondary" id="addSeasonalZips1">シーズナル追加</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="table-wrap" id="tableWrapZips1"></div>
+      </div>
+    </section>
+
+    <section class="card" id="sec-goods">
+      <div class="card-head">
+        <div>
+          <div class="card-title">グッズ（名称自由追加）</div>
+          <div class="card-sub">ハニーは削除不可。他は追加・削除OK。色はハニー固定＋他グレー薄く。</div>
+        </div>
+        <div class="row-tools">
+          <button class="secondary" id="addGoodsItem">追加</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="table-wrap" id="tableWrapGoods"></div>
+      </div>
+    </section>
+
+    <div class="footer-note">
+      保存先：このブラウザの localStorage（端末ごと）。PDFはA4縦・余白ありで2ページ。
+    </div>
+  </div>
+
+  <!-- PDF hidden pages -->
+  <div id="pdfRoot" class="pdf-pages">
+    <div class="pdf-page" id="pdfPage1">
+      <p class="pdf-title">売上 月次グラフ（1/2）</p>
+      <p class="pdf-sub" id="pdfSub1"></p>
+      <div class="pdf-col">
+        <div class="pdf-card tall"><canvas id="pdfChartCombo"></canvas></div>
+        <div class="pdf-card tall"><canvas id="pdfChartBeans200"></canvas></div>
+      </div>
+    </div>
+
+    <div style="height:14px"></div>
+
+    <div class="pdf-page" id="pdfPage2">
+      <p class="pdf-title">売上 月次グラフ（2/2）</p>
+      <p class="pdf-sub" id="pdfSub2"></p>
+      <div class="pdf-col">
+        <div class="pdf-card"><canvas id="pdfChartZips8"></canvas></div>
+        <div class="pdf-card"><canvas id="pdfChartZips1"></canvas></div>
+        <div class="pdf-card"><canvas id="pdfChartGoods"></canvas></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/** ===========================
+ *  基本
+ * =========================== */
+const MONTHS = ["1月","2月","3月","4月","5月","6月","7月","8月","9月","10月","11月","12月"];
+const STORAGE_KEY = "tullys-beans-sales-v5";
+
+/** 固定商品 */
+const FIXED = {
+  beans200: [
+    "ハウスブレンド",
+    "ピッコロバンビーノ",
+    "ブラジルファゼンダバウ",
+    "コスタリカ",
+    "モカジャバ",
+    "ブラックスリー",
+    "カフェオレモナーレ",
+    "エスプレッソクラシコ",
+    "フレンチロースト",
+    "キリマンジャロ　スイート",
+    "オーガニック　デカフェ",
+  ],
+  zips8: [
+    "ハウスブレンド",
+    "ブラジルファゼンダバウ",
+    "コスタリカ",
+    "キリマンジャロ　スイート",
+    "デカフェ　ブラジルIP農園",
+  ],
+  zips1: [
+    "ハウスブレンド",
+    "ブラジルファゼンダバウ",
+    "コスタリカ",
+    "キリマンジャロ　スイート",
+    "デカフェ　ブラジルIP農園",
+  ],
+  goodsDefault: ["ハニー"]
+};
+
+/** ===========================
+ *  ✅ 固定カラー（同名は全グラフ同色）
+ *  ※ 色判定は正規化してるから、スペース違いでも当たる
+ * =========================== */
+const COLOR_FIXED = {
+  "ハウスブレンド": "#0f5132",
+  "ピッコロバンビーノ": "#7fbf7f",
+
+  "ブラジルファゼンダバウ": "#ffff00",        // ✅更新
+  "コスタリカ": "#f39c12",
+  "モカジャバ": "#c9a24d",
+  "ブラックスリー": "#0f0f0f",
+  "カフェオレモナーレ": "#e6d3b1",
+  "エスプレッソクラシコ": "#3b2416",
+
+  "フレンチロースト": "#c71585",              // ✅更新
+  "キリマンジャロ　スイート": "#0000ff",       // ✅更新（全角スペース表記のままOK）
+  "オーガニック　デカフェ": "#e6e6fa",         // ✅更新（lavender）
+
+  "シーズナル合計": "#bfa24a",
+  "デカフェ　ブラジルIP農園": "#fffacd",       // ✅追加
+
+  "__COMBO__200g": "#0f766e",
+  "__COMBO__Z8": "#b8a99a",
+  "__COMBO__Z1": "#d08c7a",
+
+  "ハニー": "#f4c430",
+};
+
+let db = loadDB();
+
+/** UI refs */
+const toastEl = document.getElementById("toast");
+const yearInput = document.getElementById("yearInput");
+const btnLoadYear = document.getElementById("btnLoadYear");
+const btnSave = document.getElementById("btnSave");
+const btnRender = document.getElementById("btnRender");
+const btnClearYear = document.getElementById("btnClearYear");
+const btnPdf = document.getElementById("btnPdf");
+
+const quickAdd = {
+  beans: document.getElementById("quickAddBeansSeasonal"),
+  z8: document.getElementById("quickAddZ8Seasonal"),
+  z1: document.getElementById("quickAddZ1Seasonal"),
+  goods: document.getElementById("quickAddGoods"),
+};
+
+const addSeasonalButtons = {
+  beans200: document.getElementById("addSeasonalBeans200"),
+  zips8: document.getElementById("addSeasonalZips8"),
+  zips1: document.getElementById("addSeasonalZips1"),
+};
+const addGoodsItemBtn = document.getElementById("addGoodsItem");
+
+const tableWraps = {
+  sales: document.getElementById("tableWrapSales"),
+  beans200: document.getElementById("tableWrapBeans200"),
+  zips8: document.getElementById("tableWrapZips8"),
+  zips1: document.getElementById("tableWrapZips1"),
+  goods: document.getElementById("tableWrapGoods"),
+};
+
+let charts = { combo:null, beans200:null, zips8:null, zips1:null, goods:null };
+let pdfCharts = { combo:null, beans200:null, zips8:null, zips1:null, goods:null };
+
+/** start */
+initDefaultYear();
+wireEvents();
+openYear(getCurrentYear());
+renderAllCharts();
+
+/** ===========================
+ *  年
+ * =========================== */
+function initDefaultYear(){ yearInput.value = String(new Date().getFullYear()); }
+function getCurrentYear(){
+  const n = Number(String(yearInput.value || "").trim());
+  if(Number.isFinite(n) && n >= 2000 && n <= 2100) return String(n);
+  return "";
+}
+function requireYear(){
+  const y = getCurrentYear();
+  if(!y){ toast("年を手入力してな（例：2025）"); yearInput.focus(); return null; }
+  return y;
+}
+function ensureYearState(year){
+  if(!db.years) db.years = {};
+  if(!db.years[year]){ db.years[year] = makeEmptyYearState(year); persistDB(); }
+  hydrateFixed(year);
+}
+function makeEmptyYearState(year){
+  const fixedBeans = {}; FIXED.beans200.forEach(n => fixedBeans[n] = Array(12).fill(0));
+  const fixedZ8 = {}; FIXED.zips8.forEach(n => fixedZ8[n] = Array(12).fill(0));
+  const fixedZ1 = {}; FIXED.zips1.forEach(n => fixedZ1[n] = Array(12).fill(0));
+  return {
+    year,
+    salesK: Array(12).fill(0), // ✅ 売上（千円）
+    beans200: { fixed: fixedBeans, seasonals: [] },
+    zips8: { fixed: fixedZ8, seasonals: [] },
+    zips1: { fixed: fixedZ1, seasonals: [] },
+    goods: { items: FIXED.goodsDefault.map(name => ({ id: uid(), name, values: Array(12).fill(0) })) }
+  };
+}
+function hydrateFixed(year){
+  const st = db.years[year];
+
+  if(!Array.isArray(st.salesK)) st.salesK = Array(12).fill(0);
+
+  st.beans200 = st.beans200 || { fixed:{}, seasonals:[] };
+  st.beans200.fixed = st.beans200.fixed || {};
+  FIXED.beans200.forEach(n => { if(!Array.isArray(st.beans200.fixed[n])) st.beans200.fixed[n] = Array(12).fill(0); });
+
+  st.zips8 = st.zips8 || { fixed:{}, seasonals:[] };
+  st.zips8.fixed = st.zips8.fixed || {};
+  FIXED.zips8.forEach(n => { if(!Array.isArray(st.zips8.fixed[n])) st.zips8.fixed[n] = Array(12).fill(0); });
+
+  st.zips1 = st.zips1 || { fixed:{}, seasonals:[] };
+  st.zips1.fixed = st.zips1.fixed || {};
+  FIXED.zips1.forEach(n => { if(!Array.isArray(st.zips1.fixed[n])) st.zips1.fixed[n] = Array(12).fill(0); });
+
+  st.goods = st.goods || { items:[] };
+  st.goods.items = Array.isArray(st.goods.items) ? st.goods.items : [];
+  // ✅ ハニーが消えてたら復活
+  if(!st.goods.items.some(it => normalizeName(it.name) === normalizeName("ハニー"))){
+    st.goods.items.unshift({ id: uid(), name: "ハニー", values: Array(12).fill(0) });
+  }
+  st.goods.items.forEach(it => {
+    if(!it.id) it.id = uid();
+    if(typeof it.name !== "string") it.name = "";
+    if(!Array.isArray(it.values)) it.values = Array(12).fill(0);
+  });
+
+  ["beans200","zips8","zips1"].forEach(cat => {
+    st[cat].seasonals = Array.isArray(st[cat].seasonals) ? st[cat].seasonals : [];
+    st[cat].seasonals.forEach(s => {
+      if(!s.id) s.id = uid();
+      if(typeof s.name !== "string") s.name = "";
+      if(!Array.isArray(s.values)) s.values = Array(12).fill(0);
+    });
+  });
+}
+function openYear(year){
+  if(!year){ destroyAllCharts(); return; }
+  ensureYearState(year);
+  buildAllTables(year);
+  loadYearToInputs(year);
+  renderAllCharts();
+  toast(`${year}年を開いた`);
+}
+
+/** ===========================
+ *  テーブル
+ * =========================== */
+function buildAllTables(year){
+  buildSalesTable(year);
+  buildCategoryTable(year, "beans200");
+  buildCategoryTable(year, "zips8");
+  buildCategoryTable(year, "zips1");
+  buildGoodsTable(year);
+}
+
+function buildSalesTable(year){
+  const st = db.years[year];
+  const wrap = tableWraps.sales;
+  let html = `<table>
+    <thead><tr><th>（千円）</th>${MONTHS.map(m=>`<th>${m}</th>`).join("")}</tr></thead>
+    <tbody>
+      <tr data-rowtype="salesK">
+        <td><div class="name-cell"><span class="name-text">売上</span></div></td>
+        ${Array.from({length:12}).map((_,i)=>`
+          <td><input class="num-input" type="number" min="0" step="1" inputmode="numeric"
+            data-rowtype="salesK" data-month="${i}" value="${Number(st.salesK?.[i]||0)}" /></td>
+        `).join("")}
+      </tr>
+    </tbody></table>`;
+  wrap.innerHTML = html;
+
+  wrap.querySelectorAll('input.num-input[data-rowtype="salesK"]').forEach(inp => {
+    inp.addEventListener("input", () => {
+      sanitizeNumInput(inp);
+      saveInputsToYear(year, { silent:true });
+      renderAllCharts();
+    });
+  });
+}
+
+function buildCategoryTable(year, cat){
+  const st = db.years[year];
+  const wrap = tableWraps[cat]; if(!wrap) return;
+
+  let html = `<table><thead><tr><th>商品</th>${MONTHS.map(m=>`<th>${m}</th>`).join("")}<th></th></tr></thead><tbody>`;
+  FIXED[cat].forEach(name => html += rowHtmlFixed(cat, name));
+  st[cat].seasonals.forEach(s => html += rowHtmlSeasonal(cat, s.id));
+  html += `</tbody></table>`;
+  wrap.innerHTML = html;
+
+  bindTableEventsForCategory(year, cat);
+}
+function buildGoodsTable(year){
+  const st = db.years[year];
+  const wrap = tableWraps.goods; if(!wrap) return;
+
+  // ハニーを上に寄せて見やすく
+  const honey = st.goods.items.filter(it => normalizeName(it.name) === normalizeName("ハニー"));
+  const others = st.goods.items.filter(it => normalizeName(it.name) !== normalizeName("ハニー"));
+  const ordered = [...honey, ...others];
+
+  let html = `<table><thead><tr><th>名称</th>${MONTHS.map(m=>`<th>${m}</th>`).join("")}<th></th></tr></thead><tbody>`;
+  ordered.forEach(it => html += rowHtmlGoods(it.id, it.name));
+  html += `</tbody></table>`;
+  wrap.innerHTML = html;
+
+  bindTableEventsForGoods(year);
+}
+
+function rowHtmlFixed(cat, name){
+  const col = getColorForLabel(name);
+  return `<tr data-rowtype="fixed" data-cat="${escAttr(cat)}" data-name="${escAttr(name)}">
+    <td><div class="name-cell">
+      <span class="name-chip" data-chip-key="${escAttr(cat)}::${escAttr(name)}" style="background:${col}"></span>
+      <span class="name-text">${esc(name)}</span>
+    </div></td>
+    ${Array.from({length:12}).map((_,i)=>`
+      <td><input class="num-input" type="number" min="0" step="1" inputmode="numeric"
+        data-cat="${escAttr(cat)}" data-rowtype="fixed" data-key="${escAttr(name)}" data-month="${i}" value="0" /></td>
+    `).join("")}
+    <td></td>
+  </tr>`;
+}
+function rowHtmlSeasonal(cat, id){
+  const col = getColorForLabel("シーズナル合計");
+  return `<tr data-rowtype="seasonal" data-cat="${escAttr(cat)}" data-id="${escAttr(id)}">
+    <td><div class="name-cell">
+      <span class="name-chip" data-chip-key="${escAttr(cat)}::seasonal::${escAttr(id)}" style="background:${col}"></span>
+      <input class="name-input" type="text" placeholder="" data-cat="${escAttr(cat)}" data-rowtype="seasonal" data-id="${escAttr(id)}" value="" />
+    </div></td>
+    ${Array.from({length:12}).map((_,i)=>`
+      <td><input class="num-input" type="number" min="0" step="1" inputmode="numeric"
+        data-cat="${escAttr(cat)}" data-rowtype="seasonal" data-id="${escAttr(id)}" data-month="${i}" value="0" /></td>
+    `).join("")}
+    <td><button class="icon-btn danger" title="削除" data-action="delete-seasonal" data-cat="${escAttr(cat)}" data-id="${escAttr(id)}">×</button></td>
+  </tr>`;
+}
+function rowHtmlGoods(id, name){
+  const isHoney = normalizeName(name) === normalizeName("ハニー");
+  return `<tr data-rowtype="goods" data-id="${escAttr(id)}">
+    <td><div class="name-cell">
+      <span class="name-chip" data-chip-key="goods::${escAttr(id)}" style="background:#6b7280"></span>
+      <input class="name-input" type="text" placeholder="" data-rowtype="goods" data-id="${escAttr(id)}" value="" />
+    </div></td>
+    ${Array.from({length:12}).map((_,i)=>`
+      <td><input class="num-input" type="number" min="0" step="1" inputmode="numeric"
+        data-rowtype="goods" data-id="${escAttr(id)}" data-month="${i}" value="0" /></td>
+    `).join("")}
+    <td>
+      ${isHoney ? "" : `<button class="icon-btn danger" title="削除" data-action="delete-goods" data-id="${escAttr(id)}">×</button>`}
+    </td>
+  </tr>`;
+}
+
+function bindTableEventsForCategory(year, cat){
+  const wrap = tableWraps[cat];
+  const st = db.years[year];
+
+  wrap.querySelectorAll('input.num-input').forEach(inp => {
+    inp.addEventListener("input", () => {
+      sanitizeNumInput(inp);
+      saveInputsToYear(year, { silent:true });
+      renderAllCharts();
+    });
+  });
+
+  wrap.querySelectorAll('input.name-input[data-rowtype="seasonal"]').forEach(inp => {
+    inp.addEventListener("input", () => {
+      saveInputsToYear(year, { silent:true });
+      renderAllCharts();
+    });
+  });
+
+  wrap.querySelectorAll('button[data-action="delete-seasonal"]').forEach(btn => {
+    btn.addEventListener("click", () => {
+      const id = btn.getAttribute("data-id");
+      st[cat].seasonals = st[cat].seasonals.filter(s => s.id !== id);
+      persistDB();
+      buildCategoryTable(year, cat);
+      loadYearToInputs(year);
+      renderAllCharts();
+      toast("シーズナル削除した");
+    });
+  });
+}
+function bindTableEventsForGoods(year){
+  const wrap = tableWraps.goods;
+  const st = db.years[year];
+
+  wrap.querySelectorAll('input.num-input').forEach(inp => {
+    inp.addEventListener("input", () => {
+      sanitizeNumInput(inp);
+      saveInputsToYear(year, { silent:true });
+      renderAllCharts();
+    });
+  });
+
+  wrap.querySelectorAll('input.name-input[data-rowtype="goods"]').forEach(inp => {
+    inp.addEventListener("input", () => {
+      saveInputsToYear(year, { silent:true });
+      updateAllChips(year);
+      renderAllCharts();
+    });
+  });
+
+  wrap.querySelectorAll('button[data-action="delete-goods"]').forEach(btn => {
+    btn.addEventListener("click", () => {
+      const id = btn.getAttribute("data-id");
+      const it = st.goods.items.find(x => x.id === id);
+      // ✅ ハニーは絶対消さない（二重ガード）
+      if(it && normalizeName(it.name) === normalizeName("ハニー")){
+        toast("ハニーは削除できん仕様やで");
+        return;
+      }
+      st.goods.items = st.goods.items.filter(it => it.id !== id);
+      persistDB();
+      buildGoodsTable(year);
+      loadYearToInputs(year);
+      renderAllCharts();
+      toast("グッズ削除した");
+    });
+  });
+}
+
+/** ===========================
+ *  DB ↔ UI
+ * =========================== */
+function loadYearToInputs(year){
+  const st = db.years[year];
+
+  // sales
+  const sWrap = tableWraps.sales;
+  if(sWrap){
+    for(let m=0;m<12;m++){
+      const inp = sWrap.querySelector(`input.num-input[data-rowtype="salesK"][data-month="${m}"]`);
+      if(inp) inp.value = String(Number(st.salesK?.[m] || 0));
+    }
+  }
+
+  ["beans200","zips8","zips1"].forEach(cat => {
+    const wrap = tableWraps[cat];
+    if(!wrap) return;
+
+    wrap.querySelectorAll('input.num-input[data-rowtype="fixed"]').forEach(inp => {
+      const name = inp.getAttribute("data-key");
+      const m = Number(inp.getAttribute("data-month")||0);
+      inp.value = String(Number(st[cat].fixed[name]?.[m] || 0));
+    });
+
+    st[cat].seasonals.forEach(s => {
+      const nameInp = wrap.querySelector(`input.name-input[data-rowtype="seasonal"][data-id="${cssEsc(s.id)}"]`);
+      if(nameInp) nameInp.value = s.name || "";
+      for(let m=0;m<12;m++){
+        const numInp = wrap.querySelector(`input.num-input[data-rowtype="seasonal"][data-id="${cssEsc(s.id)}"][data-month="${m}"]`);
+        if(numInp) numInp.value = String(Number(s.values?.[m] || 0));
+      }
+    });
+  });
+
+  const gWrap = tableWraps.goods;
+  if(gWrap){
+    st.goods.items.forEach(it => {
+      const nameInp = gWrap.querySelector(`input.name-input[data-rowtype="goods"][data-id="${cssEsc(it.id)}"]`);
+      if(nameInp) nameInp.value = it.name || "";
+      for(let m=0;m<12;m++){
+        const numInp = gWrap.querySelector(`input.num-input[data-rowtype="goods"][data-id="${cssEsc(it.id)}"][data-month="${m}"]`);
+        if(numInp) numInp.value = String(Number(it.values?.[m] || 0));
+      }
+    });
+  }
+
+  updateAllChips(year);
+}
+
+function saveInputsToYear(year, opts={silent:false}){
+  ensureYearState(year);
+  const st = db.years[year];
+
+  // sales
+  const sWrap = tableWraps.sales;
+  if(sWrap){
+    for(let m=0;m<12;m++){
+      const inp = sWrap.querySelector(`input.num-input[data-rowtype="salesK"][data-month="${m}"]`);
+      if(inp) st.salesK[m] = numVal(inp.value);
+    }
+  }
+
+  ["beans200","zips8","zips1"].forEach(cat => {
+    const wrap = tableWraps[cat];
+    if(!wrap) return;
+
+    wrap.querySelectorAll('input.num-input[data-rowtype="fixed"]').forEach(inp => {
+      const name = inp.getAttribute("data-key");
+      const m = Number(inp.getAttribute("data-month")||0);
+      const val = numVal(inp.value);
+      if(!Array.isArray(st[cat].fixed[name])) st[cat].fixed[name] = Array(12).fill(0);
+      st[cat].fixed[name][m] = val;
+    });
+
+    st[cat].seasonals.forEach(s => {
+      const nameInp = wrap.querySelector(`input.name-input[data-rowtype="seasonal"][data-id="${cssEsc(s.id)}"]`);
+      if(nameInp) s.name = String(nameInp.value || "");
+      for(let m=0;m<12;m++){
+        const numInp = wrap.querySelector(`input.num-input[data-rowtype="seasonal"][data-id="${cssEsc(s.id)}"][data-month="${m}"]`);
+        if(numInp) s.values[m] = numVal(numInp.value);
+      }
+    });
+  });
+
+  const gWrap = tableWraps.goods;
+  if(gWrap){
+    st.goods.items.forEach(it => {
+      const nameInp = gWrap.querySelector(`input.name-input[data-rowtype="goods"][data-id="${cssEsc(it.id)}"]`);
+      if(nameInp) it.name = String(nameInp.value || "");
+      for(let m=0;m<12;m++){
+        const numInp = gWrap.querySelector(`input.num-input[data-rowtype="goods"][data-id="${cssEsc(it.id)}"][data-month="${m}"]`);
+        if(numInp) it.values[m] = numVal(numInp.value);
+      }
+    });
+  }
+
+  // ✅ ハニー必須（保存時にも復活）
+  if(!st.goods.items.some(it => normalizeName(it.name) === normalizeName("ハニー"))){
+    st.goods.items.unshift({ id: uid(), name: "ハニー", values: Array(12).fill(0) });
+  }
+
+  persistDB();
+  if(!opts.silent) toast("保存した");
+}
+
+/** ===========================
+ *  ✅ 名前正規化（スペース違い対応）
+ * =========================== */
+function normalizeName(s){
+  return String(s || "")
+    .replace(/\u3000/g, " ")      // 全角スペース -> 半角
+    .replace(/\s+/g, " ")        // 連続スペース潰す
+    .trim();
+}
+function getColorForLabel(label){
+  const n = normalizeName(label);
+  // COLOR_FIXEDも正規化キーで探す
+  for(const k in COLOR_FIXED){
+    if(normalizeName(k) === n) return COLOR_FIXED[k];
+  }
+  return "#64748b";
+}
+
+/** グッズ色 */
+function getGoodsColor(name, idxNonHoney){
+  const n = normalizeName(name);
+  if(n === normalizeName("ハニー")) return COLOR_FIXED["ハニー"];
+  const base = "#6b7280";
+  const t = Math.min(0.15 + idxNonHoney * 0.18, 0.85);
+  return mixHex(base, "#ffffff", t);
+}
+function mixHex(a, b, t){
+  const A = hexToRgb(a), B = hexToRgb(b);
+  const r = Math.round(A.r + (B.r - A.r) * t);
+  const g = Math.round(A.g + (B.g - A.g) * t);
+  const bl = Math.round(A.b + (B.b - A.b) * t);
+  return rgbToHex(r,g,bl);
+}
+function hexToRgb(hex){
+  const h = String(hex).replace("#","").trim();
+  const v = h.length===3 ? h.split("").map(c=>c+c).join("") : h;
+  const n = parseInt(v,16);
+  return { r:(n>>16)&255, g:(n>>8)&255, b:n&255 };
+}
+function rgbToHex(r,g,b){
+  return "#" + [r,g,b].map(x => x.toString(16).padStart(2,"0")).join("");
+}
+
+/** チップ更新 */
+function updateAllChips(year){
+  const st = db.years[year];
+  if(!st) return;
+
+  ["beans200","zips8","zips1"].forEach(cat => {
+    document.querySelectorAll(`[data-chip-key^="${cat}::"]`).forEach(chip => {
+      const key = chip.getAttribute("data-chip-key") || "";
+      const parts = key.split("::");
+      if(parts[1] === "seasonal"){
+        chip.style.background = getColorForLabel("シーズナル合計");
+      } else {
+        const name = parts.slice(1).join("::");
+        chip.style.background = getColorForLabel(name);
+      }
+    });
+  });
+
+  // goods chips（ハニー優先 + 他は薄い順）
+  const goods = st.goods.items.slice();
+  const others = goods.filter(it => normalizeName(it.name) !== normalizeName("ハニー"));
+  const orderMap = new Map();
+  others.forEach((it, idx) => orderMap.set(it.id, idx));
+
+  document.querySelectorAll(`[data-chip-key^="goods::"]`).forEach(chip => {
+    const key = chip.getAttribute("data-chip-key") || "";
+    const id = key.split("::")[1] || "";
+    const it = st.goods.items.find(x => x.id === id);
+    const nm = normalizeName(it?.name || "");
+    if(nm === normalizeName("ハニー")){
+      chip.style.background = getGoodsColor("ハニー", 0);
+    } else {
+      const idx = orderMap.has(id) ? orderMap.get(id) : 0;
+      chip.style.background = getGoodsColor(nm, idx);
+    }
+  });
+}
+
+/** ===========================
+ *  グラフ
+ * =========================== */
+function renderAllCharts(){
+  const year = getCurrentYear() || "(年未指定)";
+  const st = db.years?.[getCurrentYear()] || null;
+  if(!st){ destroyAllCharts(); return; }
+
+  const beansTotal = sumMapMonthly(st.beans200.fixed).map((v,i)=> v + sumSeasonalsMonthly(st.beans200.seasonals)[i]);
+  const z8Total = sumMapMonthly(st.zips8.fixed).map((v,i)=> v + sumSeasonalsMonthly(st.zips8.seasonals)[i]);
+  const z1Total = sumMapMonthly(st.zips1.fixed).map((v,i)=> v + sumSeasonalsMonthly(st.zips1.seasonals)[i]);
+
+  // ✅ ① combo + 売上（千円）黒ライン（右軸）
+  charts.combo = renderComboWithSales(
+    "chartCombo",
+    charts.combo,
+    `① 豆200g＋ZIPS 合計（${year}年）`,
+    [
+      { label:"200g", data: beansTotal, color: COLOR_FIXED["__COMBO__200g"] },
+      { label:"ZIPS（8P）", data: z8Total, color: COLOR_FIXED["__COMBO__Z8"] },
+      { label:"ZIPS（1P）", data: z1Total, color: COLOR_FIXED["__COMBO__Z1"] },
+    ],
+    st.salesK || Array(12).fill(0)
+  );
+
+  // ② beans
+  const beanDatasets = [];
+  FIXED.beans200.forEach(name => beanDatasets.push({
+    label:name, data: st.beans200.fixed[name] || Array(12).fill(0), color: getColorForLabel(name)
+  }));
+  beanDatasets.push({
+    label:"シーズナル合計",
+    data: sumSeasonalsMonthly(st.beans200.seasonals),
+    color: getColorForLabel("シーズナル合計")
+  });
+  charts.beans200 = renderBarMulti("chartBeans200", charts.beans200, `② 豆200g（商品別）（${year}年）`, beanDatasets, { stacked:true });
+
+  // ③ zips8
+  const z8Datasets = [];
+  FIXED.zips8.forEach(name => z8Datasets.push({
+    label:name, data: st.zips8.fixed[name] || Array(12).fill(0), color: getColorForLabel(name)
+  }));
+  z8Datasets.push({
+    label:"シーズナル合計",
+    data: sumSeasonalsMonthly(st.zips8.seasonals),
+    color: getColorForLabel("シーズナル合計")
+  });
+  charts.zips8 = renderBarMulti("chartZips8", charts.zips8, `③ ZIPS（8P）（商品別）（${year}年）`, z8Datasets, { stacked:true });
+
+  // ④ zips1
+  const z1Datasets = [];
+  FIXED.zips1.forEach(name => z1Datasets.push({
+    label:name, data: st.zips1.fixed[name] || Array(12).fill(0), color: getColorForLabel(name)
+  }));
+  z1Datasets.push({
+    label:"シーズナル合計",
+    data: sumSeasonalsMonthly(st.zips1.seasonals),
+    color: getColorForLabel("シーズナル合計")
+  });
+  charts.zips1 = renderBarMulti("chartZips1", charts.zips1, `④ ZIPS（1P）（商品別）（${year}年）`, z1Datasets, { stacked:true });
+
+  // ⑤ goods
+  const goodsItems = st.goods.items.slice();
+  const others = goodsItems.filter(it => normalizeName(it.name) !== normalizeName("ハニー"));
+  const orderMap = new Map(); others.forEach((it, idx)=> orderMap.set(it.id, idx));
+  const goodsDatasets = goodsItems.map(it => {
+    const idx = (normalizeName(it.name)===normalizeName("ハニー")) ? 0 : (orderMap.get(it.id) ?? 0);
+    return {
+      label: normalizeName(it.name) || "(無名)",
+      data: Array.isArray(it.values) ? it.values : Array(12).fill(0),
+      color: getGoodsColor(it.name, idx)
+    };
+  });
+  charts.goods = renderBarMulti("chartGoods", charts.goods, `⑤ グッズ（名称別）（${year}年）`, goodsDatasets, { stacked:true });
+
+  updateAllChips(getCurrentYear());
+}
+
+function destroyAllCharts(){
+  Object.keys(charts).forEach(k => { if(charts[k]) { charts[k].destroy(); charts[k]=null; } });
+}
+
+function renderBarMulti(canvasId, chartInstance, title, datasets, opt={}){
+  const canvas = document.getElementById(canvasId);
+  if(!canvas) return null;
+  const ctx = canvas.getContext("2d");
+  if(chartInstance) chartInstance.destroy();
+
+  const stacked = !!opt.stacked;
+  const ds = datasets.map(d => ({
+    type: "bar",
+    label: d.label,
+    data: d.data,
+    backgroundColor: d.color,
+    borderColor: "rgba(0,0,0,.12)",
+    borderWidth: 1
+  }));
+
+  return new Chart(ctx, {
+    type: "bar",
+    data: { labels: MONTHS, datasets: ds },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: true } },
+      scales: {
+        x: { stacked },
+        y: { stacked, beginAtZero: true, ticks:{ precision:0 } }
+      }
+    }
+  });
+}
+
+/** ✅ ①専用：棒 + 売上折れ線（右軸） */
+function renderComboWithSales(canvasId, chartInstance, title, barDatasets, salesK){
+  const canvas = document.getElementById(canvasId);
+  if(!canvas) return null;
+  const ctx = canvas.getContext("2d");
+  if(chartInstance) chartInstance.destroy();
+
+  const bars = barDatasets.map(d => ({
+    type: "bar",
+    label: d.label,
+    data: d.data,
+    backgroundColor: d.color,
+    borderColor: "rgba(0,0,0,.12)",
+    borderWidth: 1,
+    yAxisID: "y",
+  }));
+
+  const line = {
+    type: "line",
+    label: "売上（千円）",
+    data: Array.isArray(salesK) ? salesK : Array(12).fill(0),
+    borderColor: "#000000",
+    backgroundColor: "rgba(0,0,0,.0)",
+    pointBackgroundColor: "#000000",
+    pointRadius: 3,
+    tension: 0.25,
+    yAxisID: "y2",
+  };
+
+  return new Chart(ctx, {
+    data: { labels: MONTHS, datasets: [...bars, line] },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: true } },
+      scales: {
+        x: { stacked:false },
+        y: { stacked:false, beginAtZero:true, ticks:{ precision:0 } },
+        y2: {
+          position: "right",
+          beginAtZero: true,
+          grid: { drawOnChartArea: false },
+          ticks: { precision:0 }
+        }
+      }
+    }
+  });
+}
+
+/** sums */
+function sumMapMonthly(map){
+  const out = Array(12).fill(0);
+  Object.values(map || {}).forEach(arr => {
+    if(!Array.isArray(arr)) return;
+    for(let i=0;i<12;i++) out[i] += Number(arr[i]||0);
+  });
+  return out;
+}
+function sumSeasonalsMonthly(list){
+  const out = Array(12).fill(0);
+  (list||[]).forEach(s => {
+    const arr = s?.values;
+    if(!Array.isArray(arr)) return;
+    for(let i=0;i<12;i++) out[i] += Number(arr[i]||0);
+  });
+  return out;
+}
+
+/** ===========================
+ *  PDF（①もライン付き）
+ * =========================== */
+async function exportPdf2Pages(){
+  const year = requireYear();
+  if(!year) return;
+
+  saveInputsToYear(year, { silent:true });
+  renderAllCharts();
+
+  const subtitle = `対象年：${year}年　/　作成日：${new Date().toLocaleString("ja-JP")}`;
+  document.getElementById("pdfSub1").textContent = subtitle;
+  document.getElementById("pdfSub2").textContent = subtitle;
+
+  const pdfRoot = document.getElementById("pdfRoot");
+  pdfRoot.style.display = "block";
+
+  const st = db.years[year];
+
+  const beansTotal = sumMapMonthly(st.beans200.fixed).map((v,i)=> v + sumSeasonalsMonthly(st.beans200.seasonals)[i]);
+  const z8Total = sumMapMonthly(st.zips8.fixed).map((v,i)=> v + sumSeasonalsMonthly(st.zips8.seasonals)[i]);
+  const z1Total = sumMapMonthly(st.zips1.fixed).map((v,i)=> v + sumSeasonalsMonthly(st.zips1.seasonals)[i]);
+
+  pdfCharts.combo = renderComboWithSales(
+    "pdfChartCombo",
+    pdfCharts.combo,
+    `① 豆200g＋ZIPS 合計（${year}年）`,
+    [
+      { label:"200g", data: beansTotal, color: COLOR_FIXED["__COMBO__200g"] },
+      { label:"ZIPS（8P）", data: z8Total, color: COLOR_FIXED["__COMBO__Z8"] },
+      { label:"ZIPS（1P）", data: z1Total, color: COLOR_FIXED["__COMBO__Z1"] },
+    ],
+    st.salesK || Array(12).fill(0)
+  );
+
+  const beanDatasets = [];
+  FIXED.beans200.forEach(name => beanDatasets.push({ label:name, data: st.beans200.fixed[name]||Array(12).fill(0), color: getColorForLabel(name) }));
+  beanDatasets.push({ label:"シーズナル合計", data: sumSeasonalsMonthly(st.beans200.seasonals), color: getColorForLabel("シーズナル合計") });
+  pdfCharts.beans200 = renderBarMulti("pdfChartBeans200", pdfCharts.beans200, `② 豆200g（商品別）（${year}年）`, beanDatasets, { stacked:true });
+
+  const z8Datasets = [];
+  FIXED.zips8.forEach(name => z8Datasets.push({ label:name, data: st.zips8.fixed[name]||Array(12).fill(0), color: getColorForLabel(name) }));
+  z8Datasets.push({ label:"シーズナル合計", data: sumSeasonalsMonthly(st.zips8.seasonals), color: getColorForLabel("シーズナル合計") });
+  pdfCharts.zips8 = renderBarMulti("pdfChartZips8", pdfCharts.zips8, `③ ZIPS（8P）（商品別）（${year}年）`, z8Datasets, { stacked:true });
+
+  const z1Datasets = [];
+  FIXED.zips1.forEach(name => z1Datasets.push({ label:name, data: st.zips1.fixed[name]||Array(12).fill(0), color: getColorForLabel(name) }));
+  z1Datasets.push({ label:"シーズナル合計", data: sumSeasonalsMonthly(st.zips1.seasonals), color: getColorForLabel("シーズナル合計") });
+  pdfCharts.zips1 = renderBarMulti("pdfChartZips1", pdfCharts.zips1, `④ ZIPS（1P）（商品別）（${year}年）`, z1Datasets, { stacked:true });
+
+  const goodsItems = st.goods.items.slice();
+  const others = goodsItems.filter(it => normalizeName(it.name) !== normalizeName("ハニー"));
+  const orderMap = new Map(); others.forEach((it, idx)=> orderMap.set(it.id, idx));
+  const goodsDatasets = goodsItems.map(it => {
+    const idx = (normalizeName(it.name)===normalizeName("ハニー")) ? 0 : (orderMap.get(it.id) ?? 0);
+    return { label: normalizeName(it.name)||"(無名)", data:Array.isArray(it.values)?it.values:Array(12).fill(0), color:getGoodsColor(it.name, idx) };
+  });
+  pdfCharts.goods = renderBarMulti("pdfChartGoods", pdfCharts.goods, `⑤ グッズ（名称別）（${year}年）`, goodsDatasets, { stacked:true });
+
+  await wait(220);
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: "portrait", unit: "pt", format: "a4" });
+  const M = 24;
+
+  const p1 = document.getElementById("pdfPage1");
+  const c1 = await html2canvas(p1, { scale: 2, backgroundColor: "#ffffff" });
+  addCanvasToPdf(doc, c1, M);
+
+  doc.addPage();
+  const p2 = document.getElementById("pdfPage2");
+  const c2 = await html2canvas(p2, { scale: 2, backgroundColor: "#ffffff" });
+  addCanvasToPdf(doc, c2, M);
+
+  doc.save(`売上グラフ_${year}.pdf`);
+  pdfRoot.style.display = "none";
+  toast("PDF出力した（A4縦/2ページ/余白あり）");
+}
+function addCanvasToPdf(doc, canvas, margin){
+  const pageW = doc.internal.pageSize.getWidth();
+  const pageH = doc.internal.pageSize.getHeight();
+  const imgData = canvas.toDataURL("image/png");
+
+  const maxW = pageW - margin*2;
+  const maxH = pageH - margin*2;
+
+  const imgW = maxW;
+  const imgH = (canvas.height * imgW) / canvas.width;
+
+  if(imgH <= maxH){
+    const y = margin + (maxH - imgH) / 2;
+    doc.addImage(imgData, "PNG", margin, y, imgW, imgH);
+  } else {
+    const scale = maxH / imgH;
+    const w = imgW * scale;
+    const x = margin + (maxW - w) / 2;
+    doc.addImage(imgData, "PNG", x, margin, w, maxH);
+  }
+}
+function wait(ms){ return new Promise(r => setTimeout(r, ms)); }
+
+/** ===========================
+ *  追加
+ * =========================== */
+function addSeasonal(year, cat){
+  ensureYearState(year);
+  db.years[year][cat].seasonals.push({ id: uid(), name: "", values: Array(12).fill(0) });
+  persistDB();
+  buildCategoryTable(year, cat);
+  loadYearToInputs(year);
+  renderAllCharts();
+  toast("シーズナル追加した");
+}
+function addGoodsItem(year){
+  ensureYearState(year);
+  db.years[year].goods.items.push({ id: uid(), name: "", values: Array(12).fill(0) });
+  persistDB();
+  buildGoodsTable(year);
+  loadYearToInputs(year);
+  renderAllCharts();
+  toast("グッズ追加した");
+}
+
+/** ===========================
+ *  イベント
+ * =========================== */
+function wireEvents(){
+  btnLoadYear.addEventListener("click", () => {
+    const y = requireYear(); if(!y) return;
+    openYear(y);
+  });
+
+  btnSave.addEventListener("click", () => {
+    const y = requireYear(); if(!y) return;
+    saveInputsToYear(y, { silent:false });
+    updateAllChips(y);
+  });
+
+  btnRender.addEventListener("click", () => {
+    const y = requireYear(); if(!y) return;
+    saveInputsToYear(y, { silent:true });
+    updateAllChips(y);
+    renderAllCharts();
+    toast("グラフ更新した");
+  });
+
+  btnClearYear.addEventListener("click", () => {
+    const y = requireYear(); if(!y) return;
+    if(!confirm(`${y}年の入力を全部ゼロに戻すで。ほんまに？`)) return;
+    db.years[y] = makeEmptyYearState(y); // ハニーも戻る
+    persistDB();
+    openYear(y);
+    toast(`${y}年をリセットした`);
+  });
+
+  btnPdf.addEventListener("click", exportPdf2Pages);
+
+  addSeasonalButtons.beans200.addEventListener("click", () => { const y=requireYear(); if(y) addSeasonal(y,"beans200"); });
+  addSeasonalButtons.zips8.addEventListener("click", () => { const y=requireYear(); if(y) addSeasonal(y,"zips8"); });
+  addSeasonalButtons.zips1.addEventListener("click", () => { const y=requireYear(); if(y) addSeasonal(y,"zips1"); });
+  addGoodsItemBtn.addEventListener("click", () => { const y=requireYear(); if(y) addGoodsItem(y); });
+
+  quickAdd.beans.addEventListener("click", () => { const y=requireYear(); if(y) addSeasonal(y,"beans200"); });
+  quickAdd.z8.addEventListener("click", () => { const y=requireYear(); if(y) addSeasonal(y,"zips8"); });
+  quickAdd.z1.addEventListener("click", () => { const y=requireYear(); if(y) addSeasonal(y,"zips1"); });
+  quickAdd.goods.addEventListener("click", () => { const y=requireYear(); if(y) addGoodsItem(y); });
+}
+
+/** ===========================
+ *  永続化
+ * =========================== */
+function loadDB(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return { years:{} };
+    const parsed = JSON.parse(raw);
+    if(!parsed || typeof parsed !== "object") return { years:{} };
+    if(!parsed.years) parsed.years = {};
+    return parsed;
+  }catch(e){
+    console.warn("loadDB failed", e);
+    return { years:{} };
+  }
+}
+function persistDB(){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(db)); }
+  catch(e){ console.warn("persistDB failed", e); }
+}
+
+/** ===========================
+ *  小物
+ * =========================== */
+function toast(msg){
+  toastEl.textContent = msg;
+  toastEl.classList.add("show");
+  clearTimeout(toastEl._t);
+  toastEl._t = setTimeout(()=>toastEl.classList.remove("show"), 1300);
+}
+function uid(){ return "id_" + Math.random().toString(16).slice(2) + "_" + Date.now().toString(16); }
+function sanitizeNumInput(inp){
+  if(inp.value === "") return;
+  const n = Number(inp.value);
+  if(!Number.isFinite(n) || n < 0) inp.value = "0";
+}
+function numVal(v){
+  const s = String(v||"").trim();
+  if(s==="") return 0;
+  const n = Number(s);
+  if(!Number.isFinite(n) || n<0) return 0;
+  return Math.round(n);
+}
+function esc(s){
+  return String(s).replace(/[&<>"']/g, m => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"
+  }[m]));
+}
+function escAttr(s){ return String(s).replace(/"/g, "&quot;"); }
+function cssEsc(s){ return String(s).replace(/(["\\#.:\\[\\]\\s])/g, "\\$1"); }
+</script>
+</body>
+</html>
