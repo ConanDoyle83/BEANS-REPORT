@@ -7,7 +7,7 @@
 
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <!-- ✅ 折れ線に数値ラベル表示 -->
+  <!-- 折れ線に数値ラベル表示 -->
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
 
   <!-- PDF export -->
@@ -34,8 +34,8 @@
       color:#fff;
     }
 
-    /* ✅ タイトルだけの固定バー（元headerより軽い） */
-    .topbar{
+    /* ===== header ===== */
+    header{
       position:sticky; top:0; z-index:20;
       background: linear-gradient(180deg, rgba(0,0,0,.55), rgba(0,0,0,.25));
       backdrop-filter: blur(10px);
@@ -44,12 +44,64 @@
     .topbar-inner{
       max-width:1200px; margin:0 auto;
       padding:12px 14px;
-      display:flex; align-items:center; justify-content:space-between;
+      display:flex;
       gap:12px;
+      flex-wrap:wrap; /* ✅ スマホで折り返し */
+      align-items:flex-start;
+      justify-content:space-between;
     }
     .brand{ display:flex; gap:10px; align-items:baseline; font-weight:900; }
     .brand small{ opacity:.75; font-weight:700; }
 
+    /* ===== controls panel (ヘッダー右側) ===== */
+    .dock{
+      margin-left:auto; /* ✅ 右寄せ */
+      background: rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:14px;
+      padding:10px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      min-width:min(740px, 100%);
+    }
+    .dock-row{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      justify-content:flex-end;
+      flex-wrap:wrap;
+    }
+    .dock-label{
+      font-size:12px;
+      opacity:.9;
+      font-weight:700;
+    }
+    .dock-year{
+      width:120px;
+      text-align:right;
+    }
+    .dock-grid{
+      display:grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap:8px;
+    }
+    @media (max-width: 740px){
+      .dock{ min-width: 100%; }
+      .dock-grid{ grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .dock-row{ justify-content:flex-start; }
+      .dock-year{ width:110px; }
+    }
+
+    input[type="text"], input[type="number"]{
+      font: inherit;
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,.18);
+      background: rgba(0,0,0,.22);
+      color:#fff;
+      padding:8px 10px;
+      outline:none;
+    }
     button{
       font: inherit;
       cursor:pointer;
@@ -60,6 +112,7 @@
       background: linear-gradient(180deg, var(--accent), var(--accent2));
       box-shadow: 0 10px 22px rgba(0,0,0,.25);
       white-space:nowrap;
+      width:100%;
     }
     button.secondary{
       background: rgba(255,255,255,.10);
@@ -93,6 +146,7 @@
       display:flex; gap:10px; flex-wrap:wrap; align-items:center;
       margin:0 0 10px;
     }
+    .row-tools button{ width:auto; }
 
     .table-wrap{
       overflow:auto;
@@ -150,6 +204,9 @@
       outline:none !important;
       text-align:right;
     }
+    /* ✅ ゼロ消し面倒問題：フォーカスで全選択 */
+    .num-input.select-on-focus{ }
+
     .icon-btn{
       border:1px solid rgba(42,26,18,.18);
       background:#fff;
@@ -225,7 +282,7 @@
       max-width:min(92vw, 820px);
       white-space:nowrap;
       overflow:hidden; text-overflow:ellipsis;
-      z-index:9999;
+      z-index:50;
     }
     .toast.show{ opacity:1; }
     .footer-note{
@@ -233,114 +290,22 @@
       font-size:12px;
       margin:12px 2px 0;
     }
-
-    /* =========================
-       ✅ Wi-Fi風：浮く操作ドック
-       ========================= */
-    .dock{
-      position:fixed;
-      left:12px; top:92px;
-      width:min(560px, 92vw);
-      z-index:9998;
-      user-select:none;
-    }
-    .dock-handle{
-      display:flex; align-items:center; justify-content:space-between;
-      padding:10px 12px;
-      background: rgba(255,255,255,.10);
-      border:1px solid rgba(255,255,255,.16);
-      border-radius:16px;
-      box-shadow: 0 16px 40px rgba(0,0,0,.35);
-      backdrop-filter: blur(10px);
-      cursor:grab;
-    }
-    .dock-handle:active{ cursor:grabbing; }
-    .dock-title{ font-weight:900; color:#fff; letter-spacing:.03em; }
-    .dock-actions{ display:flex; gap:8px; align-items:center; }
-    .dock-mini-btn{
-      border:1px solid rgba(255,255,255,.18);
-      background: rgba(0,0,0,.20);
-      color:#fff;
-      border-radius:12px;
-      padding:6px 10px;
-      cursor:pointer;
-      font-weight:900;
-    }
-    .dock-body{
-      margin-top:10px;
-      background: rgba(0,0,0,.22);
-      border:1px solid rgba(255,255,255,.14);
-      border-radius:16px;
-      padding:10px;
-      backdrop-filter: blur(10px);
-      box-shadow: 0 16px 40px rgba(0,0,0,.30);
-    }
-    .dock-row{
-      display:flex; gap:8px; align-items:center; flex-wrap:wrap;
-      margin-bottom:10px;
-    }
-    .dock-label{ font-size:12px; opacity:.92; color:#fff; font-weight:800; }
-    .dock-year{
-      font: inherit;
-      border-radius:12px;
-      border:1px solid rgba(255,255,255,.18);
-      background: rgba(0,0,0,.22);
-      color:#fff;
-      padding:8px 10px;
-      outline:none;
-      width:110px; text-align:right;
-    }
-    .dock-grid{
-      display:grid;
-      grid-template-columns: repeat(2, minmax(0,1fr));
-      gap:8px;
-      margin-top:8px;
-    }
-    @media (min-width: 520px){
-      .dock-grid{ grid-template-columns: repeat(4, minmax(0,1fr)); }
-    }
-    .dock-restore{
-      width:140px;
-      margin-top:10px;
-      border-radius:999px;
-      padding:10px 12px;
-      background: rgba(255,255,255,.10);
-      border:1px solid rgba(255,255,255,.16);
-      color:#fff;
-      font-weight:900;
-      cursor:pointer;
-      box-shadow: 0 16px 40px rgba(0,0,0,.30);
-      backdrop-filter: blur(10px);
-    }
   </style>
 </head>
 
 <body>
-
-  <!-- ✅ タイトルだけ固定 -->
-  <div class="topbar">
-    <div class="topbar-inner">
-      <div class="brand">
-        豆・ZIPS・グッズ <small>年別 月次グラフ（5つ）</small>
-      </div>
-    </div>
-  </div>
-
-  <!-- ✅ Wi-Fi風：浮く操作ドック -->
-  <div id="dock" class="dock" aria-label="操作ドック">
-    <div id="dockHandle" class="dock-handle">
-      <div class="dock-title">操作</div>
-      <div class="dock-actions">
-        <button id="dockMinBtn" class="dock-mini-btn" title="最小化">—</button>
-      </div>
+<header>
+  <div class="topbar-inner">
+    <div class="brand">
+      豆・ZIPS・グッズ <small>年別 月次グラフ（5つ）</small>
     </div>
 
-    <div id="dockBody" class="dock-body">
+    <!-- ✅ ヘッダー右側：操作パネル（旧ドックの役割） -->
+    <div class="dock" aria-label="操作">
       <div class="dock-row">
-        <label class="dock-label" for="yearInput">年</label>
-        <!-- ✅ 年入力はドック側に持つ（idは同じyearInputでOK） -->
+        <span class="dock-label">年</span>
         <input id="yearInput" class="dock-year" type="number" inputmode="numeric" placeholder="例：2025" min="2000" max="2100" />
-        <button id="btnLoadYear" class="secondary">この年を開く</button>
+        <button id="btnLoadYear" class="secondary" style="width:auto;">この年を開く</button>
       </div>
 
       <div class="dock-grid">
@@ -357,151 +322,145 @@
         <button id="quickAddGoods" class="secondary">＋グッズ</button>
       </div>
     </div>
+  </div>
+</header>
 
-    <button id="dockRestoreBtn" class="dock-restore" title="戻す" style="display:none;">
-      操作
-    </button>
+<main>
+  <div class="grid">
+
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-title">月次棒グラフ（5つ）</div>
+          <div class="card-sub">
+            ①豆200g＋ZIPS合計（200g / ZIPS8P / ZIPS1P）＋ 売上（右軸：万・小数1桁）＋月ごと数値表示｜
+            ②豆200g（商品別、指定色固定。シーズナルは合計1枠）｜
+            ③ZIPS（8P）（商品別、指定色固定。シーズナルは合計1枠）｜
+            ④ZIPS（1P）（商品別、指定色固定。シーズナルは合計1枠）｜
+            ⑤グッズ（名称別：ハニー固定＋他は薄くなるグレー）
+          </div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="charts">
+          <div class="chart-box"><canvas id="chartCombo"></canvas></div>
+          <div class="chart-box"><canvas id="chartBeans200"></canvas></div>
+          <div class="chart-box"><canvas id="chartZips8"></canvas></div>
+          <div class="chart-box"><canvas id="chartZips1"></canvas></div>
+          <div class="chart-box"><canvas id="chartGoods"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 売上入力（千円） -->
+    <section class="card" id="sec-sales">
+      <div class="card-head">
+        <div>
+          <div class="card-title">売上（千円）</div>
+          <div class="card-sub">①の折れ線：表示は「万（小数1桁）」になる（例：123 → 12.3万）</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="table-wrap" id="tableWrapSales"></div>
+      </div>
+    </section>
+
+    <section class="card" id="sec-beans200">
+      <div class="card-head">
+        <div>
+          <div class="card-title">豆 200g（固定＋シーズナル複数）</div>
+          <div class="card-sub">シーズナルは何個でも追加OK（グラフでは「シーズナル合計」1枠）</div>
+        </div>
+        <div class="row-tools">
+          <button class="secondary" id="addSeasonalBeans200">シーズナル追加</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="table-wrap" id="tableWrapBeans200"></div>
+      </div>
+    </section>
+
+    <section class="card" id="sec-zips8">
+      <div class="card-head">
+        <div>
+          <div class="card-title">ZIPS（8P）（固定＋シーズナル複数）</div>
+          <div class="card-sub">シーズナルは何個でも追加OK（グラフでは「シーズナル合計」1枠）</div>
+        </div>
+        <div class="row-tools">
+          <button class="secondary" id="addSeasonalZips8">シーズナル追加</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="table-wrap" id="tableWrapZips8"></div>
+      </div>
+    </section>
+
+    <section class="card" id="sec-zips1">
+      <div class="card-head">
+        <div>
+          <div class="card-title">ZIPS（1P）（固定＋シーズナル複数）</div>
+          <div class="card-sub">シーズナルは何個でも追加OK（グラフでは「シーズナル合計」1枠）</div>
+        </div>
+        <div class="row-tools">
+          <button class="secondary" id="addSeasonalZips1">シーズナル追加</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="table-wrap" id="tableWrapZips1"></div>
+      </div>
+    </section>
+
+    <section class="card" id="sec-goods">
+      <div class="card-head">
+        <div>
+          <div class="card-title">グッズ（名称自由追加）</div>
+          <div class="card-sub">ハニーは削除不可。他は追加・削除OK。色はハニー固定＋他グレー薄く。</div>
+        </div>
+        <div class="row-tools">
+          <button class="secondary" id="addGoodsItem">追加</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="table-wrap" id="tableWrapGoods"></div>
+      </div>
+    </section>
+
+    <div class="footer-note">
+      保存先：このブラウザの localStorage（端末ごと）。PDFはA4縦・余白ありで2ページ。
+    </div>
   </div>
 
-  <main>
-    <div class="grid">
-
-      <div class="card">
-        <div class="card-head">
-          <div>
-            <div class="card-title">月次棒グラフ（5つ）</div>
-            <div class="card-sub">
-              ①豆200g＋ZIPS合計（200g / ZIPS8P / ZIPS1P）＋ 売上折れ線（表示は万：小数1桁＋ラベル）｜
-              ②豆200g（商品別、指定色固定。シーズナルは合計1枠）｜
-              ③ZIPS（8P）（商品別、指定色固定。シーズナルは合計1枠）｜
-              ④ZIPS（1P）（商品別、指定色固定。シーズナルは合計1枠）｜
-              ⑤グッズ（名称別：ハニー固定＋他は薄くなるグレー）
-            </div>
-          </div>
-        </div>
-        <div class="card-body">
-          <div class="charts">
-            <div class="chart-box"><canvas id="chartCombo"></canvas></div>
-            <div class="chart-box"><canvas id="chartBeans200"></canvas></div>
-            <div class="chart-box"><canvas id="chartZips8"></canvas></div>
-            <div class="chart-box"><canvas id="chartZips1"></canvas></div>
-            <div class="chart-box"><canvas id="chartGoods"></canvas></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 売上入力（千円） -->
-      <section class="card" id="sec-sales">
-        <div class="card-head">
-          <div>
-            <div class="card-title">売上（千円）</div>
-            <div class="card-sub">①の折れ線：表示は「万（小数1桁）」になる（例：123 → 12.3万）</div>
-          </div>
-        </div>
-        <div class="card-body">
-          <div class="table-wrap" id="tableWrapSales"></div>
-        </div>
-      </section>
-
-      <section class="card" id="sec-beans200">
-        <div class="card-head">
-          <div>
-            <div class="card-title">豆 200g（固定＋シーズナル複数）</div>
-            <div class="card-sub">シーズナルは何個でも追加OK（グラフでは「シーズナル合計」1枠）</div>
-          </div>
-          <div class="row-tools">
-            <button class="secondary" id="addSeasonalBeans200">シーズナル追加</button>
-          </div>
-        </div>
-        <div class="card-body">
-          <div class="table-wrap" id="tableWrapBeans200"></div>
-        </div>
-      </section>
-
-      <section class="card" id="sec-zips8">
-        <div class="card-head">
-          <div>
-            <div class="card-title">ZIPS（8P）（固定＋シーズナル複数）</div>
-            <div class="card-sub">シーズナルは何個でも追加OK（グラフでは「シーズナル合計」1枠）</div>
-          </div>
-          <div class="row-tools">
-            <button class="secondary" id="addSeasonalZips8">シーズナル追加</button>
-          </div>
-        </div>
-        <div class="card-body">
-          <div class="table-wrap" id="tableWrapZips8"></div>
-        </div>
-      </section>
-
-      <section class="card" id="sec-zips1">
-        <div class="card-head">
-          <div>
-            <div class="card-title">ZIPS（1P）（固定＋シーズナル複数）</div>
-            <div class="card-sub">シーズナルは何個でも追加OK（グラフでは「シーズナル合計」1枠）</div>
-          </div>
-          <div class="row-tools">
-            <button class="secondary" id="addSeasonalZips1">シーズナル追加</button>
-          </div>
-        </div>
-        <div class="card-body">
-          <div class="table-wrap" id="tableWrapZips1"></div>
-        </div>
-      </section>
-
-      <section class="card" id="sec-goods">
-        <div class="card-head">
-          <div>
-            <div class="card-title">グッズ（名称自由追加）</div>
-            <div class="card-sub">ハニーは削除不可。他は追加・削除OK。色はハニー固定＋他グレー薄く。</div>
-          </div>
-          <div class="row-tools">
-            <button class="secondary" id="addGoodsItem">追加</button>
-          </div>
-        </div>
-        <div class="card-body">
-          <div class="table-wrap" id="tableWrapGoods"></div>
-        </div>
-      </section>
-
-      <div class="footer-note">
-        保存先：このブラウザの localStorage（端末ごと）。PDFはA4縦・余白ありで2ページ。
+  <!-- PDF hidden pages -->
+  <div id="pdfRoot" class="pdf-pages">
+    <div class="pdf-page" id="pdfPage1">
+      <p class="pdf-title">売上 月次グラフ（1/2）</p>
+      <p class="pdf-sub" id="pdfSub1"></p>
+      <div class="pdf-col">
+        <div class="pdf-card tall"><canvas id="pdfChartCombo"></canvas></div>
+        <div class="pdf-card tall"><canvas id="pdfChartBeans200"></canvas></div>
       </div>
     </div>
 
-    <!-- PDF hidden pages -->
-    <div id="pdfRoot" class="pdf-pages">
-      <div class="pdf-page" id="pdfPage1">
-        <p class="pdf-title">売上 月次グラフ（1/2）</p>
-        <p class="pdf-sub" id="pdfSub1"></p>
-        <div class="pdf-col">
-          <div class="pdf-card tall"><canvas id="pdfChartCombo"></canvas></div>
-          <div class="pdf-card tall"><canvas id="pdfChartBeans200"></canvas></div>
-        </div>
-      </div>
+    <div style="height:14px"></div>
 
-      <div style="height:14px"></div>
-
-      <div class="pdf-page" id="pdfPage2">
-        <p class="pdf-title">売上 月次グラフ（2/2）</p>
-        <p class="pdf-sub" id="pdfSub2"></p>
-        <div class="pdf-col">
-          <div class="pdf-card"><canvas id="pdfChartZips8"></canvas></div>
-          <div class="pdf-card"><canvas id="pdfChartZips1"></canvas></div>
-          <div class="pdf-card"><canvas id="pdfChartGoods"></canvas></div>
-        </div>
+    <div class="pdf-page" id="pdfPage2">
+      <p class="pdf-title">売上 月次グラフ（2/2）</p>
+      <p class="pdf-sub" id="pdfSub2"></p>
+      <div class="pdf-col">
+        <div class="pdf-card"><canvas id="pdfChartZips8"></canvas></div>
+        <div class="pdf-card"><canvas id="pdfChartZips1"></canvas></div>
+        <div class="pdf-card"><canvas id="pdfChartGoods"></canvas></div>
       </div>
     </div>
-  </main>
+  </div>
+</main>
 
-  <div class="toast" id="toast"></div>
+<div class="toast" id="toast"></div>
 
 <script>
 /** 基本 */
 const MONTHS = ["1月","2月","3月","4月","5月","6月","7月","8月","9月","10月","11月","12月"];
-const STORAGE_KEY = "tullys-beans-sales-v5";
-
-/** ✅ ドック位置保存 */
-const DOCK_KEY = "tullys-dock-pos-v1";
+const STORAGE_KEY = "tullys-beans-sales-v6"; // ✅ 変更（構造更新に備えて）
 
 /** 固定商品 */
 const FIXED = {
@@ -539,25 +498,20 @@ const FIXED = {
 const COLOR_FIXED = {
   "ハウスブレンド": "#0f5132",
   "ピッコロバンビーノ": "#7fbf7f",
-
   "ブラジルファゼンダバウ": "#ffff00",
   "コスタリカ": "#f39c12",
   "モカジャバ": "#c9a24d",
   "ブラックスリー": "#0f0f0f",
   "カフェオレモナーレ": "#e6d3b1",
   "エスプレッソクラシコ": "#3b2416",
-
   "フレンチロースト": "#c71585",
   "キリマンジャロ　スイート": "#0000ff",
   "オーガニック　デカフェ": "#e6e6fa",
-
   "シーズナル合計": "#bfa24a",
   "デカフェ　ブラジルIP農園": "#fffacd",
-
   "__COMBO__200g": "#0f766e",
   "__COMBO__Z8": "#b8a99a",
   "__COMBO__Z1": "#d08c7a",
-
   "ハニー": "#f4c430",
 };
 
@@ -596,108 +550,6 @@ const tableWraps = {
 
 let charts = { combo:null, beans200:null, zips8:null, zips1:null, goods:null };
 let pdfCharts = { combo:null, beans200:null, zips8:null, zips1:null, goods:null };
-
-/** ===========================
- *  ✅ 数字入力：0消し不要化
- * =========================== */
-function enhanceNumInput(inp){
-  inp.addEventListener("focus", () => {
-    try{ inp.select(); }catch(e){}
-  });
-  inp.addEventListener("keydown", (e) => {
-    if(e.ctrlKey || e.metaKey || e.altKey) return;
-    if(/^\d$/.test(e.key)){
-      const v = String(inp.value || "").trim();
-      if(v === "0"){ inp.value = ""; }
-    }
-  });
-}
-
-/** ===========================
- *  ✅ ドック（移動 + 最小化 + 位置保存）
- * =========================== */
-const dock = document.getElementById("dock");
-const dockHandle = document.getElementById("dockHandle");
-const dockBody = document.getElementById("dockBody");
-const dockMinBtn = document.getElementById("dockMinBtn");
-const dockRestoreBtn = document.getElementById("dockRestoreBtn");
-
-function clamp(v, min, max){ return Math.max(min, Math.min(max, v)); }
-function loadDockPos(){
-  try{
-    const raw = localStorage.getItem(DOCK_KEY);
-    if(!raw) return null;
-    const p = JSON.parse(raw);
-    if(!p || typeof p !== "object") return null;
-    return p;
-  }catch(e){ return null; }
-}
-function saveDockPos(p){
-  try{ localStorage.setItem(DOCK_KEY, JSON.stringify(p)); }catch(e){}
-}
-function applyDockPos(x, y){
-  const r = dock.getBoundingClientRect();
-  const maxX = window.innerWidth - r.width - 10;
-  const maxY = window.innerHeight - r.height - 10;
-  dock.style.left = clamp(x, 10, maxX) + "px";
-  dock.style.top  = clamp(y, 10, maxY) + "px";
-}
-(function initDock(){
-  const p = loadDockPos();
-  if(p && Number.isFinite(p.x) && Number.isFinite(p.y)) applyDockPos(p.x, p.y);
-  if(p && p.minimized){
-    dockBody.style.display = "none";
-    dockRestoreBtn.style.display = "inline-block";
-  }
-})();
-
-let dragging = false;
-let startX=0, startY=0, baseX=0, baseY=0;
-
-dockHandle.addEventListener("pointerdown", (e)=>{
-  dragging = true;
-  dockHandle.setPointerCapture(e.pointerId);
-  const rect = dock.getBoundingClientRect();
-  startX = e.clientX; startY = e.clientY;
-  baseX = rect.left; baseY = rect.top;
-});
-
-dockHandle.addEventListener("pointermove", (e)=>{
-  if(!dragging) return;
-  const dx = e.clientX - startX;
-  const dy = e.clientY - startY;
-  applyDockPos(baseX + dx, baseY + dy);
-});
-
-dockHandle.addEventListener("pointerup", ()=>{
-  if(!dragging) return;
-  dragging = false;
-  const rect = dock.getBoundingClientRect();
-  const p = loadDockPos() || {};
-  p.x = rect.left; p.y = rect.top;
-  p.minimized = (dockBody.style.display === "none");
-  saveDockPos(p);
-});
-
-dockMinBtn.addEventListener("click", (e)=>{
-  e.stopPropagation();
-  dockBody.style.display = "none";
-  dockRestoreBtn.style.display = "inline-block";
-  const rect = dock.getBoundingClientRect();
-  saveDockPos({ x:rect.left, y:rect.top, minimized:true });
-});
-
-dockRestoreBtn.addEventListener("click", ()=>{
-  dockBody.style.display = "block";
-  dockRestoreBtn.style.display = "none";
-  const rect = dock.getBoundingClientRect();
-  saveDockPos({ x:rect.left, y:rect.top, minimized:false });
-});
-
-window.addEventListener("resize", ()=>{
-  const rect = dock.getBoundingClientRect();
-  applyDockPos(rect.left, rect.top);
-});
 
 /** start */
 initDefaultYear();
@@ -798,21 +650,14 @@ function buildSalesTable(year){
       <tr data-rowtype="salesK">
         <td><div class="name-cell"><span class="name-text">売上</span></div></td>
         ${Array.from({length:12}).map((_,i)=>`
-          <td><input class="num-input" type="number" min="0" step="1" inputmode="numeric"
+          <td><input class="num-input select-on-focus" type="number" min="0" step="1" inputmode="numeric"
             data-rowtype="salesK" data-month="${i}" value="${Number(st.salesK?.[i]||0)}" /></td>
         `).join("")}
       </tr>
     </tbody></table>`;
   wrap.innerHTML = html;
 
-  wrap.querySelectorAll('input.num-input[data-rowtype="salesK"]').forEach(inp => {
-    enhanceNumInput(inp);
-    inp.addEventListener("input", () => {
-      sanitizeNumInput(inp);
-      saveInputsToYear(year, { silent:true });
-      renderAllCharts();
-    });
-  });
+  bindNumericInputs(wrap, year);
 }
 
 function buildCategoryTable(year, cat){
@@ -851,7 +696,7 @@ function rowHtmlFixed(cat, name){
       <span class="name-text">${esc(name)}</span>
     </div></td>
     ${Array.from({length:12}).map((_,i)=>`
-      <td><input class="num-input" type="number" min="0" step="1" inputmode="numeric"
+      <td><input class="num-input select-on-focus" type="number" min="0" step="1" inputmode="numeric"
         data-cat="${escAttr(cat)}" data-rowtype="fixed" data-key="${escAttr(name)}" data-month="${i}" value="0" /></td>
     `).join("")}
     <td></td>
@@ -865,7 +710,7 @@ function rowHtmlSeasonal(cat, id){
       <input class="name-input" type="text" placeholder="" data-cat="${escAttr(cat)}" data-rowtype="seasonal" data-id="${escAttr(id)}" value="" />
     </div></td>
     ${Array.from({length:12}).map((_,i)=>`
-      <td><input class="num-input" type="number" min="0" step="1" inputmode="numeric"
+      <td><input class="num-input select-on-focus" type="number" min="0" step="1" inputmode="numeric"
         data-cat="${escAttr(cat)}" data-rowtype="seasonal" data-id="${escAttr(id)}" data-month="${i}" value="0" /></td>
     `).join("")}
     <td><button class="icon-btn danger" title="削除" data-action="delete-seasonal" data-cat="${escAttr(cat)}" data-id="${escAttr(id)}">×</button></td>
@@ -879,7 +724,7 @@ function rowHtmlGoods(id, name){
       <input class="name-input" type="text" placeholder="" data-rowtype="goods" data-id="${escAttr(id)}" value="" />
     </div></td>
     ${Array.from({length:12}).map((_,i)=>`
-      <td><input class="num-input" type="number" min="0" step="1" inputmode="numeric"
+      <td><input class="num-input select-on-focus" type="number" min="0" step="1" inputmode="numeric"
         data-rowtype="goods" data-id="${escAttr(id)}" data-month="${i}" value="0" /></td>
     `).join("")}
     <td>
@@ -888,18 +733,34 @@ function rowHtmlGoods(id, name){
   </tr>`;
 }
 
-function bindTableEventsForCategory(year, cat){
-  const wrap = tableWraps[cat];
-  const st = db.years[year];
-
-  wrap.querySelectorAll('input.num-input').forEach(inp => {
-    enhanceNumInput(inp);
+/** ✅ 数字入力：ゼロ消し不要（フォーカスで全選択）＋ iOSでも数字キーボード寄せ */
+function bindNumericInputs(root, year){
+  root.querySelectorAll('input.num-input').forEach(inp => {
+    inp.setAttribute("inputmode","numeric");
+    inp.addEventListener("focus", () => {
+      // 0を毎回消すの面倒 → フォーカスで全選択
+      try{ inp.select(); }catch(e){}
+    });
+    inp.addEventListener("pointerdown", (e) => {
+      // iOSでselectが効きにくい時の保険
+      // すでにフォーカス済みなら邪魔しない
+      if(document.activeElement === inp) return;
+      // pointerdown直後にselect
+      setTimeout(()=>{ try{ inp.select(); }catch(e){} }, 0);
+    });
     inp.addEventListener("input", () => {
       sanitizeNumInput(inp);
       saveInputsToYear(year, { silent:true });
       renderAllCharts();
     });
   });
+}
+
+function bindTableEventsForCategory(year, cat){
+  const wrap = tableWraps[cat];
+  const st = db.years[year];
+
+  bindNumericInputs(wrap, year);
 
   wrap.querySelectorAll('input.name-input[data-rowtype="seasonal"]').forEach(inp => {
     inp.addEventListener("input", () => {
@@ -924,14 +785,7 @@ function bindTableEventsForGoods(year){
   const wrap = tableWraps.goods;
   const st = db.years[year];
 
-  wrap.querySelectorAll('input.num-input').forEach(inp => {
-    enhanceNumInput(inp);
-    inp.addEventListener("input", () => {
-      sanitizeNumInput(inp);
-      saveInputsToYear(year, { silent:true });
-      renderAllCharts();
-    });
-  });
+  bindNumericInputs(wrap, year);
 
   wrap.querySelectorAll('input.name-input[data-rowtype="goods"]').forEach(inp => {
     inp.addEventListener("input", () => {
@@ -1161,36 +1015,18 @@ function renderAllCharts(){
   );
 
   const beanDatasets = [];
-  FIXED.beans200.forEach(name => beanDatasets.push({
-    label:name, data: st.beans200.fixed[name] || Array(12).fill(0), color: getColorForLabel(name)
-  }));
-  beanDatasets.push({
-    label:"シーズナル合計",
-    data: sumSeasonalsMonthly(st.beans200.seasonals),
-    color: getColorForLabel("シーズナル合計")
-  });
+  FIXED.beans200.forEach(name => beanDatasets.push({ label:name, data: st.beans200.fixed[name] || Array(12).fill(0), color: getColorForLabel(name) }));
+  beanDatasets.push({ label:"シーズナル合計", data: sumSeasonalsMonthly(st.beans200.seasonals), color: getColorForLabel("シーズナル合計") });
   charts.beans200 = renderBarMulti("chartBeans200", charts.beans200, `② 豆200g（商品別）（${year}年）`, beanDatasets, { stacked:true });
 
   const z8Datasets = [];
-  FIXED.zips8.forEach(name => z8Datasets.push({
-    label:name, data: st.zips8.fixed[name] || Array(12).fill(0), color: getColorForLabel(name)
-  }));
-  z8Datasets.push({
-    label:"シーズナル合計",
-    data: sumSeasonalsMonthly(st.zips8.seasonals),
-    color: getColorForLabel("シーズナル合計")
-  });
+  FIXED.zips8.forEach(name => z8Datasets.push({ label:name, data: st.zips8.fixed[name] || Array(12).fill(0), color: getColorForLabel(name) }));
+  z8Datasets.push({ label:"シーズナル合計", data: sumSeasonalsMonthly(st.zips8.seasonals), color: getColorForLabel("シーズナル合計") });
   charts.zips8 = renderBarMulti("chartZips8", charts.zips8, `③ ZIPS（8P）（商品別）（${year}年）`, z8Datasets, { stacked:true });
 
   const z1Datasets = [];
-  FIXED.zips1.forEach(name => z1Datasets.push({
-    label:name, data: st.zips1.fixed[name] || Array(12).fill(0), color: getColorForLabel(name)
-  }));
-  z1Datasets.push({
-    label:"シーズナル合計",
-    data: sumSeasonalsMonthly(st.zips1.seasonals),
-    color: getColorForLabel("シーズナル合計")
-  });
+  FIXED.zips1.forEach(name => z1Datasets.push({ label:name, data: st.zips1.fixed[name] || Array(12).fill(0), color: getColorForLabel(name) }));
+  z1Datasets.push({ label:"シーズナル合計", data: sumSeasonalsMonthly(st.zips1.seasonals), color: getColorForLabel("シーズナル合計") });
   charts.zips1 = renderBarMulti("chartZips1", charts.zips1, `④ ZIPS（1P）（商品別）（${year}年）`, z1Datasets, { stacked:true });
 
   const goodsItems = st.goods.items.slice();
@@ -1198,11 +1034,7 @@ function renderAllCharts(){
   const orderMap = new Map(); others.forEach((it, idx)=> orderMap.set(it.id, idx));
   const goodsDatasets = goodsItems.map(it => {
     const idx = (normalizeName(it.name)===normalizeName("ハニー")) ? 0 : (orderMap.get(it.id) ?? 0);
-    return {
-      label: normalizeName(it.name) || "(無名)",
-      data: Array.isArray(it.values) ? it.values : Array(12).fill(0),
-      color: getGoodsColor(it.name, idx)
-    };
+    return { label: normalizeName(it.name) || "(無名)", data: Array.isArray(it.values) ? it.values : Array(12).fill(0), color: getGoodsColor(it.name, idx) };
   });
   charts.goods = renderBarMulti("chartGoods", charts.goods, `⑤ グッズ（名称別）（${year}年）`, goodsDatasets, { stacked:true });
 
@@ -1235,6 +1067,7 @@ function renderBarMulti(canvasId, chartInstance, title, datasets, opt={}){
     options: {
       responsive: true,
       maintainAspectRatio: false,
+      animation: false,
       plugins: { legend: { display: true } },
       scales: {
         x: { stacked },
@@ -1244,7 +1077,7 @@ function renderBarMulti(canvasId, chartInstance, title, datasets, opt={}){
   });
 }
 
-/** ✅ ①専用：棒 + 売上折れ線（右軸）
+/** ①専用：棒 + 売上折れ線（右軸）
  *  売上入力：千円
  *  表示：万（小数1桁）
  */
@@ -1253,6 +1086,16 @@ function renderComboWithSales(canvasId, chartInstance, title, barDatasets, sales
   if(!canvas) return null;
   const ctx = canvas.getContext("2d");
   if(chartInstance) chartInstance.destroy();
+
+  // ✅ PDFで右軸ズレやすい問題：レイアウト/ピクセルを固定寄せ
+  const stabilizePdf = {
+    id: "stabilizePdf",
+    beforeLayout(chart){
+      if(!isPdf) return;
+      chart.options.layout = chart.options.layout || {};
+      chart.options.layout.padding = { left: 10, right: 34, top: 8, bottom: 8 };
+    }
+  };
 
   const bars = barDatasets.map(d => ({
     type: "bar",
@@ -1264,13 +1107,10 @@ function renderComboWithSales(canvasId, chartInstance, title, barDatasets, sales
     yAxisID: "y",
   }));
 
-  // 千円 -> 万（小数1桁）
-  const toMan = (k) => (Number(k||0) / 10);
-
   const line = {
     type: "line",
     label: "売上（万）",
-    data: Array.isArray(salesK) ? salesK : Array(12).fill(0), // 元は千円
+    data: Array.isArray(salesK) ? salesK : Array(12).fill(0), // 中身は千円のまま
     borderColor: "#000000",
     backgroundColor: "rgba(0,0,0,0)",
     pointBackgroundColor: "#000000",
@@ -1284,9 +1124,9 @@ function renderComboWithSales(canvasId, chartInstance, title, barDatasets, sales
       offset: 4,
       color: "#000",
       formatter: (v) => {
-        const m = toMan(v);
-        if(m <= 0) return "";
-        return `${m.toFixed(1)}万`;
+        const n = Number(v) || 0; // 千円
+        if(n <= 0) return "";
+        return `${(n / 10).toFixed(1)}万`;
       },
       font: { weight: "700", size: 10 }
     }
@@ -1299,10 +1139,7 @@ function renderComboWithSales(canvasId, chartInstance, title, barDatasets, sales
       maintainAspectRatio: false,
       devicePixelRatio: isPdf ? 1 : undefined,
       animation: false,
-
-      // ✅ PDFで右軸がズレやすいの抑える
-      layout: { padding: { left: 8, right: isPdf ? 32 : 10, top: 6, bottom: 6 } },
-
+      layout: { padding: { left: 8, right: isPdf ? 34 : 10, top: 6, bottom: 6 } },
       plugins: {
         legend: { display: true },
         datalabels: { display: (ctx) => ctx.dataset.type === "line" }
@@ -1315,12 +1152,15 @@ function renderComboWithSales(canvasId, chartInstance, title, barDatasets, sales
           beginAtZero: true,
           grid: { drawOnChartArea: false },
           ticks: {
-            callback: (v) => (Number(v) ? toMan(v).toFixed(1) : "0.0")
+            callback: (v) => {
+              const n = Number(v)||0; // 千円
+              return (n/10).toFixed(1);
+            }
           }
         }
       }
     },
-    plugins: [ChartDataLabels]
+    plugins: [stabilizePdf, ChartDataLabels]
   });
 }
 
@@ -1401,7 +1241,7 @@ async function exportPdf2Pages(){
   });
   pdfCharts.goods = renderBarMulti("pdfChartGoods", pdfCharts.goods, `⑤ グッズ（名称別）（${year}年）`, goodsDatasets, { stacked:true });
 
-  await wait(220);
+  await wait(250);
 
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ orientation: "portrait", unit: "pt", format: "a4" });
@@ -1553,6 +1393,5 @@ function esc(s){
 function escAttr(s){ return String(s).replace(/"/g, "&quot;"); }
 function cssEsc(s){ return String(s).replace(/(["\\#.:\\[\\]\\s])/g, "\\$1"); }
 </script>
-
 </body>
 </html>
