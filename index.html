@@ -30,15 +30,12 @@
       background: radial-gradient(1200px 500px at 10% -10%, rgba(255,255,255,.07), transparent 60%),
                   linear-gradient(160deg,var(--bg1),var(--bg2));
       color:#fff;
-
-      /* ✅ Dock分の余白：JSで動的に上書きする */
-      padding-top: 92px;
     }
 
-    /* ✅ 上のブランドだけ残す（操作はDockに移動） */
+    /* ===== 画面上のタイトルだけ残す（操作はドッグへ） ===== */
     header{
       position:sticky; top:0; z-index:10;
-      background: linear-gradient(180deg, rgba(0,0,0,.55), rgba(0,0,0,.25));
+      background: linear-gradient(180deg, rgba(0,0,0,.55), rgba(0,0,0,.20));
       backdrop-filter: blur(10px);
       border-bottom:1px solid rgba(255,255,255,.08);
     }
@@ -50,44 +47,6 @@
     }
     .brand{ display:flex; gap:10px; align-items:baseline; font-weight:900; }
     .brand small{ opacity:.75; font-weight:700; }
-
-    /* ===== 元のcontrols/pill/input/button ===== */
-    .controls{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
-    .pill{
-      background: rgba(255,255,255,.08);
-      border:1px solid rgba(255,255,255,.12);
-      border-radius:999px;
-      padding:8px 10px;
-      display:flex; gap:8px; align-items:center;
-    }
-    .pill label{ font-size:12px; opacity:.9; }
-    input[type="text"], input[type="number"]{
-      font: inherit;
-      border-radius:10px;
-      border:1px solid rgba(255,255,255,.18);
-      background: rgba(0,0,0,.22);
-      color:#fff;
-      padding:8px 10px;
-      outline:none;
-    }
-    input[type="number"]{ width:90px; text-align:right; }
-    button{
-      font: inherit;
-      cursor:pointer;
-      border:0;
-      border-radius:12px;
-      padding:10px 12px;
-      color:#fff;
-      background: linear-gradient(180deg, var(--accent), var(--accent2));
-      box-shadow: 0 10px 22px rgba(0,0,0,.25);
-      white-space:nowrap;
-    }
-    button.secondary{
-      background: rgba(255,255,255,.10);
-      border:1px solid rgba(255,255,255,.16);
-      box-shadow:none;
-    }
-    button.danger{ background: rgba(178,58,58,.88); }
 
     main{ max-width:1200px; margin:0 auto; padding:14px; }
     .grid{ display:grid; grid-template-columns: 1fr; gap:12px; }
@@ -161,6 +120,8 @@
       border-radius:10px !important;
       outline:none !important;
     }
+
+    /* ✅ 数字入力：スマホで数字キーボード出す＆見た目はそのまま */
     .num-input{
       width:86px;
       border:1px solid rgba(42,26,18,.18) !important;
@@ -171,6 +132,7 @@
       outline:none !important;
       text-align:right;
     }
+
     .icon-btn{
       border:1px solid rgba(42,26,18,.18);
       background:#fff;
@@ -246,7 +208,7 @@
       max-width:min(92vw, 820px);
       white-space:nowrap;
       overflow:hidden; text-overflow:ellipsis;
-      z-index: 10000;
+      z-index:9999;
     }
     .toast.show{ opacity:1; }
     .footer-note{
@@ -255,85 +217,125 @@
       margin:12px 2px 0;
     }
 
-    /* =========================================================
-       ✅ Floating Dock + minimize (Wi-Fi button vibe)
-       ========================================================= */
+    /* ===========================
+       ✅ フローティング・ドッグ（最小化OK）
+       =========================== */
     .dock{
-      position: fixed;
-      top: 10px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 9999;
-
-      width: min(1180px, calc(100vw - 18px));
-      border-radius: 18px;
-      padding: 10px;
-
-      background: rgba(0,0,0,.35);
-      border: 1px solid rgba(255,255,255,.14);
-      backdrop-filter: blur(14px);
-      box-shadow: 0 18px 50px rgba(0,0,0,.38);
-
-      transition: width .18s ease, padding .18s ease, opacity .18s ease;
+      position:fixed;
+      right:14px;
+      bottom:14px;
+      z-index:9998;
+      width:min(92vw, 520px);
+      color:#fff;
+      pointer-events:auto;
     }
     .dock-inner{
+      background: rgba(0,0,0,.55);
+      border:1px solid rgba(255,255,255,.14);
+      border-radius:18px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 18px 44px rgba(0,0,0,.35);
+      overflow:hidden;
+    }
+    .dock-top{
       display:flex;
       align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:10px 10px;
+    }
+    .dock-title{
+      display:flex; align-items:center; gap:10px;
+      font-weight:900;
+    }
+    .dock-title .dot{
+      width:10px; height:10px; border-radius:999px;
+      background: rgba(255,255,255,.7);
+      box-shadow: 0 0 0 3px rgba(255,255,255,.14);
+    }
+    .dock-actions{ display:flex; gap:8px; align-items:center; }
+    .dock-btn{
+      cursor:pointer;
+      border:1px solid rgba(255,255,255,.16);
+      background: rgba(255,255,255,.10);
+      color:#fff;
+      border-radius:12px;
+      padding:8px 10px;
+      font: inherit;
+      font-weight:800;
+      white-space:nowrap;
+    }
+    .dock-btn.primary{
+      border:0;
+      background: linear-gradient(180deg, var(--accent), var(--accent2));
+      box-shadow: 0 10px 22px rgba(0,0,0,.25);
+    }
+    .dock-btn.danger{
+      border:0;
+      background: rgba(178,58,58,.92);
+    }
+    .dock-body{
+      border-top:1px solid rgba(255,255,255,.10);
+      padding:10px;
+      display:grid;
       gap:10px;
     }
-    .dock-toggle{
-      flex: 0 0 auto;
-      font-size: 18px;
-      font-weight: 900;
-      line-height: 1;
-      padding: 10px 14px;
-      border-radius: 14px;
-      border: 1px solid rgba(255,255,255,.22);
-      background: rgba(255,255,255,.12);
-      color: #fff;
-      cursor: pointer;
-      box-shadow: 0 8px 18px rgba(0,0,0,.35);
-    }
-    /* Dock内controls：基本1段、はみ出たら横スクロール */
-    .dock .controls{
-      width: 100%;
+    .dock-row{
       display:flex;
       gap:10px;
+      flex-wrap:wrap;
       align-items:center;
-      flex-wrap: nowrap;
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-      padding-bottom: 2px;
     }
-    .dock .controls::-webkit-scrollbar{ height: 8px; }
-    .dock .controls::-webkit-scrollbar-thumb{
-      background: rgba(255,255,255,.18);
-      border-radius: 999px;
+    .dock-pill{
+      background: rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:999px;
+      padding:8px 10px;
+      display:flex; gap:8px; align-items:center;
     }
-    .dock input[type="text"], .dock input[type="number"]{ padding: 8px 10px; }
-    .dock button{ padding: 9px 11px; border-radius: 14px; }
+    .dock-pill label{ font-size:12px; opacity:.9; }
+    .dock-input{
+      font: inherit;
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,.18);
+      background: rgba(0,0,0,.22);
+      color:#fff;
+      padding:8px 10px;
+      outline:none;
+      width:110px;
+      text-align:right;
+    }
+    .dock-mini{
+      position:fixed;
+      right:14px;
+      bottom:14px;
+      z-index:9998;
+      display:none;
+    }
+    .dock-mini button{
+      cursor:pointer;
+      border:1px solid rgba(255,255,255,.18);
+      background: rgba(0,0,0,.55);
+      color:#fff;
+      border-radius:999px;
+      padding:12px 14px;
+      font: inherit;
+      font-weight:900;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 18px 44px rgba(0,0,0,.35);
+    }
+    .dock.is-min .dock-inner{ display:none; }
+    .dock.is-min + .dock-mini{ display:block; }
 
-    /* 最小化状態：中身隠してボタンだけ */
-    .dock.minimized{
-      width: auto;
-      padding: 8px;
-      opacity: .92;
-    }
-    .dock.minimized #dockControls{ display:none; }
-
-    @media (max-width: 720px){
-      .dock-toggle{ padding: 12px 16px; font-size: 20px; }
-      .dock .controls{
-        flex-wrap: wrap;
-        overflow-x: visible;
-      }
+    @media (max-width: 420px){
+      .dock{ right:10px; bottom:10px; }
+      .dock-mini{ right:10px; bottom:10px; }
+      .dock-input{ width:92px; }
     }
   </style>
 </head>
 
 <body>
-
-<!-- ✅ ブランド表示だけ残す -->
 <header>
   <div class="header-inner">
     <div class="brand">
@@ -342,29 +344,45 @@
   </div>
 </header>
 
-<!-- ✅ 常に上に浮く操作Dock（≡で最小化） -->
-<div class="dock" id="dock">
+<!-- ✅ ドッグ（常に浮く） -->
+<div id="dock" class="dock">
   <div class="dock-inner">
-    <button class="dock-toggle" id="dockToggle" title="操作バーを最小化 / 復帰">≡</button>
+    <div class="dock-top">
+      <div class="dock-title">
+        <span class="dot"></span>
+        操作ドッグ
+      </div>
+      <div class="dock-actions">
+        <button id="dockMinBtn" class="dock-btn" title="最小化">—</button>
+      </div>
+    </div>
 
-    <div class="controls" id="dockControls">
-      <div class="pill">
-        <label for="yearInput">年（手入力）</label>
-        <input id="yearInput" type="number" inputmode="numeric" placeholder="例：2025" min="2000" max="2100" />
+    <div class="dock-body">
+      <div class="dock-row">
+        <div class="dock-pill">
+          <label for="yearInput">年</label>
+          <input id="yearInput" class="dock-input" type="number" inputmode="numeric" placeholder="例：2025" min="2000" max="2100" />
+        </div>
+
+        <button id="btnLoadYear" class="dock-btn">開く</button>
+        <button id="btnSave" class="dock-btn primary">保存</button>
+        <button id="btnRender" class="dock-btn">更新</button>
+        <button id="btnClearYear" class="dock-btn danger">リセット</button>
+        <button id="btnPdf" class="dock-btn">PDF</button>
       </div>
 
-      <button id="btnLoadYear" class="secondary">この年を開く</button>
-      <button id="btnSave">保存</button>
-      <button id="btnRender" class="secondary">グラフ更新</button>
-      <button id="btnClearYear" class="danger">この年をリセット</button>
-      <button id="btnPdf" class="secondary">PDF出力（A4縦/2ページ）</button>
-
-      <button id="quickAddBeansSeasonal" class="secondary">＋豆シーズナル</button>
-      <button id="quickAddZ8Seasonal" class="secondary">＋Z8シーズナル</button>
-      <button id="quickAddZ1Seasonal" class="secondary">＋Z1シーズナル</button>
-      <button id="quickAddGoods" class="secondary">＋グッズ</button>
+      <div class="dock-row">
+        <button id="quickAddBeansSeasonal" class="dock-btn">＋豆シーズナル</button>
+        <button id="quickAddZ8Seasonal" class="dock-btn">＋Z8シーズナル</button>
+        <button id="quickAddZ1Seasonal" class="dock-btn">＋Z1シーズナル</button>
+        <button id="quickAddGoods" class="dock-btn">＋グッズ</button>
+      </div>
     </div>
   </div>
+</div>
+
+<div class="dock-mini" id="dockMini">
+  <button id="dockOpenBtn">⚙ 操作</button>
 </div>
 
 <main>
@@ -414,7 +432,7 @@
           <div class="card-sub">シーズナルは何個でも追加OK（グラフでは「シーズナル合計」1枠）</div>
         </div>
         <div class="row-tools">
-          <button class="secondary" id="addSeasonalBeans200">シーズナル追加</button>
+          <button class="dock-btn" id="addSeasonalBeans200">シーズナル追加</button>
         </div>
       </div>
       <div class="card-body">
@@ -429,7 +447,7 @@
           <div class="card-sub">シーズナルは何個でも追加OK（グラフでは「シーズナル合計」1枠）</div>
         </div>
         <div class="row-tools">
-          <button class="secondary" id="addSeasonalZips8">シーズナル追加</button>
+          <button class="dock-btn" id="addSeasonalZips8">シーズナル追加</button>
         </div>
       </div>
       <div class="card-body">
@@ -444,7 +462,7 @@
           <div class="card-sub">シーズナルは何個でも追加OK（グラフでは「シーズナル合計」1枠）</div>
         </div>
         <div class="row-tools">
-          <button class="secondary" id="addSeasonalZips1">シーズナル追加</button>
+          <button class="dock-btn" id="addSeasonalZips1">シーズナル追加</button>
         </div>
       </div>
       <div class="card-body">
@@ -459,7 +477,7 @@
           <div class="card-sub">ハニーは削除不可。他は追加・削除OK。色はハニー固定＋他グレー薄く。</div>
         </div>
         <div class="row-tools">
-          <button class="secondary" id="addGoodsItem">追加</button>
+          <button class="dock-btn" id="addGoodsItem">追加</button>
         </div>
       </div>
       <div class="card-body">
@@ -468,7 +486,8 @@
     </section>
 
     <div class="footer-note">
-      保存先：このブラウザの localStorage（端末ごと）。PDFはA4縦・余白ありで2ページ。
+      保存先：このブラウザの localStorage（端末ごと）。PDFはA4縦・余白ありで2ページ。<br/>
+      ✅ 数字入力は「数字キーボード」＋「フォーカスで全選択」仕様。
     </div>
   </div>
 
@@ -538,25 +557,19 @@ const FIXED = {
   goodsDefault: ["ハニー"]
 };
 
-/** ===========================
- *  ✅ 固定カラー（同名は全グラフ同色）
- *  ※ 色判定は正規化してるから、スペース違いでも当たる
- * =========================== */
+/** 固定カラー（同名は全グラフ同色） */
 const COLOR_FIXED = {
   "ハウスブレンド": "#0f5132",
   "ピッコロバンビーノ": "#7fbf7f",
-
   "ブラジルファゼンダバウ": "#ffff00",
   "コスタリカ": "#f39c12",
   "モカジャバ": "#c9a24d",
   "ブラックスリー": "#0f0f0f",
   "カフェオレモナーレ": "#e6d3b1",
   "エスプレッソクラシコ": "#3b2416",
-
   "フレンチロースト": "#c71585",
   "キリマンジャロ　スイート": "#0000ff",
   "オーガニック　デカフェ": "#e6e6fa",
-
   "シーズナル合計": "#bfa24a",
   "デカフェ　ブラジルIP農園": "#fffacd",
 
@@ -600,15 +613,34 @@ const tableWraps = {
   goods: document.getElementById("tableWrapGoods"),
 };
 
+const dock = document.getElementById("dock");
+const dockMinBtn = document.getElementById("dockMinBtn");
+const dockOpenBtn = document.getElementById("dockOpenBtn");
+
 let charts = { combo:null, beans200:null, zips8:null, zips1:null, goods:null };
 let pdfCharts = { combo:null, beans200:null, zips8:null, zips1:null, goods:null };
 
 /** start */
 initDefaultYear();
+wireDock();
 wireEvents();
-setupDockMinimize();     // ✅ Dock機能：最小化+保存+余白調整
 openYear(getCurrentYear());
 renderAllCharts();
+
+/** ===========================
+ *  ドッグ
+ * =========================== */
+function wireDock(){
+  dockMinBtn.addEventListener("click", ()=>{
+    dock.classList.add("is-min");
+  });
+  dockOpenBtn.addEventListener("click", ()=>{
+    dock.classList.remove("is-min");
+  });
+
+  // 初期状態は開いたまま
+  dock.classList.remove("is-min");
+}
 
 /** ===========================
  *  年
@@ -684,6 +716,7 @@ function openYear(year){
   ensureYearState(year);
   buildAllTables(year);
   loadYearToInputs(year);
+  enableSmartNumberInputs(); // ✅ ここで効かせる
   renderAllCharts();
   toast(`${year}年を開いた`);
 }
@@ -702,14 +735,18 @@ function buildAllTables(year){
 function buildSalesTable(year){
   const st = db.years[year];
   const wrap = tableWraps.sales;
+
   let html = `<table>
     <thead><tr><th>（千円）</th>${MONTHS.map(m=>`<th>${m}</th>`).join("")}</tr></thead>
     <tbody>
       <tr data-rowtype="salesK">
         <td><div class="name-cell"><span class="name-text">売上</span></div></td>
         ${Array.from({length:12}).map((_,i)=>`
-          <td><input class="num-input" type="number" min="0" step="1" inputmode="numeric"
-            data-rowtype="salesK" data-month="${i}" value="${Number(st.salesK?.[i]||0)}" /></td>
+          <td>
+            <input class="num-input" type="text"
+              inputmode="numeric" pattern="[0-9]*" autocomplete="off" enterkeyhint="done"
+              data-rowtype="salesK" data-month="${i}" value="${Number(st.salesK?.[i]||0)}" />
+          </td>
         `).join("")}
       </tr>
     </tbody></table>`;
@@ -736,6 +773,7 @@ function buildCategoryTable(year, cat){
 
   bindTableEventsForCategory(year, cat);
 }
+
 function buildGoodsTable(year){
   const st = db.years[year];
   const wrap = tableWraps.goods; if(!wrap) return;
@@ -760,8 +798,11 @@ function rowHtmlFixed(cat, name){
       <span class="name-text">${esc(name)}</span>
     </div></td>
     ${Array.from({length:12}).map((_,i)=>`
-      <td><input class="num-input" type="number" min="0" step="1" inputmode="numeric"
-        data-cat="${escAttr(cat)}" data-rowtype="fixed" data-key="${escAttr(name)}" data-month="${i}" value="0" /></td>
+      <td>
+        <input class="num-input" type="text"
+          inputmode="numeric" pattern="[0-9]*" autocomplete="off" enterkeyhint="done"
+          data-cat="${escAttr(cat)}" data-rowtype="fixed" data-key="${escAttr(name)}" data-month="${i}" value="0" />
+      </td>
     `).join("")}
     <td></td>
   </tr>`;
@@ -774,8 +815,11 @@ function rowHtmlSeasonal(cat, id){
       <input class="name-input" type="text" placeholder="" data-cat="${escAttr(cat)}" data-rowtype="seasonal" data-id="${escAttr(id)}" value="" />
     </div></td>
     ${Array.from({length:12}).map((_,i)=>`
-      <td><input class="num-input" type="number" min="0" step="1" inputmode="numeric"
-        data-cat="${escAttr(cat)}" data-rowtype="seasonal" data-id="${escAttr(id)}" data-month="${i}" value="0" /></td>
+      <td>
+        <input class="num-input" type="text"
+          inputmode="numeric" pattern="[0-9]*" autocomplete="off" enterkeyhint="done"
+          data-cat="${escAttr(cat)}" data-rowtype="seasonal" data-id="${escAttr(id)}" data-month="${i}" value="0" />
+      </td>
     `).join("")}
     <td><button class="icon-btn danger" title="削除" data-action="delete-seasonal" data-cat="${escAttr(cat)}" data-id="${escAttr(id)}">×</button></td>
   </tr>`;
@@ -788,8 +832,11 @@ function rowHtmlGoods(id, name){
       <input class="name-input" type="text" placeholder="" data-rowtype="goods" data-id="${escAttr(id)}" value="" />
     </div></td>
     ${Array.from({length:12}).map((_,i)=>`
-      <td><input class="num-input" type="number" min="0" step="1" inputmode="numeric"
-        data-rowtype="goods" data-id="${escAttr(id)}" data-month="${i}" value="0" /></td>
+      <td>
+        <input class="num-input" type="text"
+          inputmode="numeric" pattern="[0-9]*" autocomplete="off" enterkeyhint="done"
+          data-rowtype="goods" data-id="${escAttr(id)}" data-month="${i}" value="0" />
+      </td>
     `).join("")}
     <td>
       ${isHoney ? "" : `<button class="icon-btn danger" title="削除" data-action="delete-goods" data-id="${escAttr(id)}">×</button>`}
@@ -823,11 +870,13 @@ function bindTableEventsForCategory(year, cat){
       persistDB();
       buildCategoryTable(year, cat);
       loadYearToInputs(year);
+      enableSmartNumberInputs(); // ✅ 再生成後に効かせる
       renderAllCharts();
       toast("シーズナル削除した");
     });
   });
 }
+
 function bindTableEventsForGoods(year){
   const wrap = tableWraps.goods;
   const st = db.years[year];
@@ -860,6 +909,7 @@ function bindTableEventsForGoods(year){
       persistDB();
       buildGoodsTable(year);
       loadYearToInputs(year);
+      enableSmartNumberInputs(); // ✅ 再生成後に効かせる
       renderAllCharts();
       toast("グッズ削除した");
     });
@@ -872,6 +922,7 @@ function bindTableEventsForGoods(year){
 function loadYearToInputs(year){
   const st = db.years[year];
 
+  // sales
   const sWrap = tableWraps.sales;
   if(sWrap){
     for(let m=0;m<12;m++){
@@ -919,6 +970,7 @@ function saveInputsToYear(year, opts={silent:false}){
   ensureYearState(year);
   const st = db.years[year];
 
+  // sales
   const sWrap = tableWraps.sales;
   if(sWrap){
     for(let m=0;m<12;m++){
@@ -970,8 +1022,34 @@ function saveInputsToYear(year, opts={silent:false}){
 }
 
 /** ===========================
- *  ✅ 名前正規化（スペース違い対応）
+ *  ✅ 入力体験：数字キーボード + 0消し不要
  * =========================== */
+function enableSmartNumberInputs(){
+  document.querySelectorAll("input.num-input").forEach(inp => {
+    // フォーカスで全選択 → 0消し不要
+    if(!inp._smartFocus){
+      inp.addEventListener("focus", () => {
+        try{ inp.select(); }catch(e){}
+      });
+      inp._smartFocus = true;
+    }
+
+    // iOSで数字キーボードをより確実に（念押し）
+    inp.setAttribute("inputmode","numeric");
+    inp.setAttribute("pattern","[0-9]*");
+    inp.setAttribute("autocomplete","off");
+    inp.setAttribute("enterkeyhint","done");
+  });
+}
+
+function sanitizeNumInput(inp){
+  let s = String(inp.value ?? "");
+  s = s.replace(/[^\d]/g, "");      // 数字以外削除
+  s = s.replace(/^0+(?=\d)/, "");   // 先頭ゼロ整理（0は残す）
+  if(s === "") s = "0";
+  inp.value = s;
+}
+
 function normalizeName(s){
   return String(s || "")
     .replace(/\u3000/g, " ")
@@ -1204,7 +1282,6 @@ function renderComboWithSales(canvasId, chartInstance, title, barDatasets, sales
   });
 }
 
-/** sums */
 function sumMapMonthly(map){
   const out = Array(12).fill(0);
   Object.values(map || {}).forEach(arr => {
@@ -1224,7 +1301,7 @@ function sumSeasonalsMonthly(list){
 }
 
 /** ===========================
- *  PDF（①もライン付き）
+ *  PDF
  * =========================== */
 async function exportPdf2Pages(){
   const year = requireYear();
@@ -1333,6 +1410,7 @@ function addSeasonal(year, cat){
   persistDB();
   buildCategoryTable(year, cat);
   loadYearToInputs(year);
+  enableSmartNumberInputs(); // ✅
   renderAllCharts();
   toast("シーズナル追加した");
 }
@@ -1342,6 +1420,7 @@ function addGoodsItem(year){
   persistDB();
   buildGoodsTable(year);
   loadYearToInputs(year);
+  enableSmartNumberInputs(); // ✅
   renderAllCharts();
   toast("グッズ追加した");
 }
@@ -1392,42 +1471,6 @@ function wireEvents(){
 }
 
 /** ===========================
- *  ✅ Dock：最小化 + 状態保存 + 余白自動調整
- * =========================== */
-function setupDockMinimize(){
-  const DOCK_STATE_KEY = "dock_minimized_v1";
-  const dock = document.getElementById("dock");
-  const dockToggle = document.getElementById("dockToggle");
-  if(!dock || !dockToggle) return;
-
-  function applyDockPadding(){
-    const h = dock.getBoundingClientRect().height;
-    const topGap = 16;
-    document.body.style.paddingTop = `${Math.ceil(h + topGap)}px`;
-  }
-
-  function setDockMinimized(min){
-    dock.classList.toggle("minimized", !!min);
-    localStorage.setItem(DOCK_STATE_KEY, min ? "1" : "0");
-    applyDockPadding();
-  }
-
-  dockToggle.addEventListener("click", () => {
-    const now = dock.classList.contains("minimized");
-    setDockMinimized(!now);
-    toast(!now ? "操作バーを最小化した" : "操作バーを表示した");
-  });
-
-  // 初期復元
-  const saved = localStorage.getItem(DOCK_STATE_KEY) === "1";
-  setDockMinimized(saved);
-
-  // レイアウト確定後にも補正
-  setTimeout(applyDockPadding, 50);
-  window.addEventListener("resize", applyDockPadding);
-}
-
-/** ===========================
  *  永続化
  * =========================== */
 function loadDB(){
@@ -1458,11 +1501,6 @@ function toast(msg){
   toastEl._t = setTimeout(()=>toastEl.classList.remove("show"), 1300);
 }
 function uid(){ return "id_" + Math.random().toString(16).slice(2) + "_" + Date.now().toString(16); }
-function sanitizeNumInput(inp){
-  if(inp.value === "") return;
-  const n = Number(inp.value);
-  if(!Number.isFinite(n) || n < 0) inp.value = "0";
-}
 function numVal(v){
   const s = String(v||"").trim();
   if(s==="") return 0;
@@ -1480,4 +1518,3 @@ function cssEsc(s){ return String(s).replace(/(["\\#.:\\[\\]\\s])/g, "\\$1"); }
 </script>
 </body>
 </html>
-
