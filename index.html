@@ -7,7 +7,7 @@
 
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <!-- 折れ線に数値ラベル表示 -->
+  <!-- ✅ 折れ線に数値ラベル表示 -->
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
 
   <!-- PDF export -->
@@ -33,65 +33,66 @@
                   linear-gradient(160deg,var(--bg1),var(--bg2));
       color:#fff;
     }
-
-    /* ===== header ===== */
     header{
       position:sticky; top:0; z-index:20;
       background: linear-gradient(180deg, rgba(0,0,0,.55), rgba(0,0,0,.25));
       backdrop-filter: blur(10px);
       border-bottom:1px solid rgba(255,255,255,.08);
     }
-    .topbar-inner{
+    .header-inner{
       max-width:1200px; margin:0 auto;
       padding:12px 14px;
-      display:flex;
-      gap:12px;
-      flex-wrap:wrap; /* ✅ スマホで折り返し */
-      align-items:flex-start;
-      justify-content:space-between;
+      display:flex; gap:12px; flex-wrap:wrap;
+      align-items:center; justify-content:space-between;
     }
     .brand{ display:flex; gap:10px; align-items:baseline; font-weight:900; }
     .brand small{ opacity:.75; font-weight:700; }
 
-    /* ===== controls panel (ヘッダー右側) ===== */
+    /* ===== ヘッダー右の操作（省略対応） ===== */
     .dock{
-      margin-left:auto; /* ✅ 右寄せ */
-      background: rgba(255,255,255,.08);
-      border:1px solid rgba(255,255,255,.12);
-      border-radius:14px;
-      padding:10px;
       display:flex;
       flex-direction:column;
       gap:10px;
-      min-width:min(740px, 100%);
+      align-items:flex-end;
+      min-width:min(680px, 100%);
     }
     .dock-row{
       display:flex;
-      gap:8px;
+      gap:10px;
       align-items:center;
-      justify-content:flex-end;
       flex-wrap:wrap;
+      justify-content:flex-end;
     }
     .dock-label{
       font-size:12px;
       opacity:.9;
-      font-weight:700;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.08);
     }
     .dock-year{
       width:120px;
       text-align:right;
     }
+    .dock-body{ display:block; }
+    body.controls-collapsed .dock-body{ display:none; }
+
     .dock-grid{
-      display:grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap:8px;
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      justify-content:flex-end;
     }
-    @media (max-width: 740px){
-      .dock{ min-width: 100%; }
-      .dock-grid{ grid-template-columns: repeat(2, minmax(0,1fr)); }
-      .dock-row{ justify-content:flex-start; }
-      .dock-year{ width:110px; }
+
+    .pill{
+      background: rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:999px;
+      padding:8px 10px;
+      display:flex; gap:8px; align-items:center;
     }
+    .pill label{ font-size:12px; opacity:.9; }
 
     input[type="text"], input[type="number"]{
       font: inherit;
@@ -102,6 +103,8 @@
       padding:8px 10px;
       outline:none;
     }
+    input[type="number"]{ width:90px; text-align:right; }
+
     button{
       font: inherit;
       cursor:pointer;
@@ -112,7 +115,6 @@
       background: linear-gradient(180deg, var(--accent), var(--accent2));
       box-shadow: 0 10px 22px rgba(0,0,0,.25);
       white-space:nowrap;
-      width:100%;
     }
     button.secondary{
       background: rgba(255,255,255,.10);
@@ -146,7 +148,6 @@
       display:flex; gap:10px; flex-wrap:wrap; align-items:center;
       margin:0 0 10px;
     }
-    .row-tools button{ width:auto; }
 
     .table-wrap{
       overflow:auto;
@@ -204,9 +205,6 @@
       outline:none !important;
       text-align:right;
     }
-    /* ✅ ゼロ消し面倒問題：フォーカスで全選択 */
-    .num-input.select-on-focus{ }
-
     .icon-btn{
       border:1px solid rgba(42,26,18,.18);
       background:#fff;
@@ -282,7 +280,6 @@
       max-width:min(92vw, 820px);
       white-space:nowrap;
       overflow:hidden; text-overflow:ellipsis;
-      z-index:50;
     }
     .toast.show{ opacity:1; }
     .footer-note{
@@ -290,17 +287,30 @@
       font-size:12px;
       margin:12px 2px 0;
     }
+
+    /* ✅ 月次棒グラフ（5つ）右のWi-Fiボタン */
+    .mini-toggle{
+      width:auto;
+      padding:10px 12px;
+      border-radius:999px;
+      background: rgba(255,255,255,.10);
+      border:1px solid rgba(255,255,255,.16);
+      box-shadow:none;
+      color:var(--text);
+      font-weight:900;
+    }
+    .mini-toggle:active{ transform: translateY(1px); }
   </style>
 </head>
 
 <body>
 <header>
-  <div class="topbar-inner">
+  <div class="header-inner">
     <div class="brand">
       豆・ZIPS・グッズ <small>年別 月次グラフ（5つ）</small>
     </div>
 
-    <!-- ✅ ヘッダー右側：操作パネル（旧ドックの役割） -->
+    <!-- ✅ ヘッダー右：年入力 + （保存〜＋グッズを折りたたみ可） -->
     <div class="dock" aria-label="操作">
       <div class="dock-row">
         <span class="dock-label">年</span>
@@ -308,18 +318,19 @@
         <button id="btnLoadYear" class="secondary" style="width:auto;">この年を開く</button>
       </div>
 
-      <div class="dock-grid">
-        <button id="btnSave">保存</button>
-        <button id="btnRender" class="secondary">グラフ更新</button>
-        <button id="btnClearYear" class="danger">この年をリセット</button>
-        <button id="btnPdf" class="secondary">PDF出力</button>
-      </div>
-
-      <div class="dock-grid">
-        <button id="quickAddBeansSeasonal" class="secondary">＋豆シーズナル</button>
-        <button id="quickAddZ8Seasonal" class="secondary">＋Z8シーズナル</button>
-        <button id="quickAddZ1Seasonal" class="secondary">＋Z1シーズナル</button>
-        <button id="quickAddGoods" class="secondary">＋グッズ</button>
+      <div id="dockBody" class="dock-body">
+        <div class="dock-grid">
+          <button id="btnSave">保存</button>
+          <button id="btnRender" class="secondary">グラフ更新</button>
+          <button id="btnClearYear" class="danger">この年をリセット</button>
+          <button id="btnPdf" class="secondary">PDF出力（A4縦/2ページ）</button>
+        </div>
+        <div class="dock-grid">
+          <button id="quickAddBeansSeasonal" class="secondary">＋豆シーズナル</button>
+          <button id="quickAddZ8Seasonal" class="secondary">＋Z8シーズナル</button>
+          <button id="quickAddZ1Seasonal" class="secondary">＋Z1シーズナル</button>
+          <button id="quickAddGoods" class="secondary">＋グッズ</button>
+        </div>
       </div>
     </div>
   </div>
@@ -340,7 +351,13 @@
             ⑤グッズ（名称別：ハニー固定＋他は薄くなるグレー）
           </div>
         </div>
+
+        <!-- ✅ 省略/展開ボタン（ここが“月次グラフ（5つ）”の右） -->
+        <button id="btnControlsToggle" class="mini-toggle" type="button" aria-expanded="true" title="操作ボタンを省略/表示">
+          📶 操作
+        </button>
       </div>
+
       <div class="card-body">
         <div class="charts">
           <div class="chart-box"><canvas id="chartCombo"></canvas></div>
@@ -460,7 +477,7 @@
 <script>
 /** 基本 */
 const MONTHS = ["1月","2月","3月","4月","5月","6月","7月","8月","9月","10月","11月","12月"];
-const STORAGE_KEY = "tullys-beans-sales-v6"; // ✅ 変更（構造更新に備えて）
+const STORAGE_KEY = "tullys-beans-sales-v5";
 
 /** 固定商品 */
 const FIXED = {
@@ -498,20 +515,25 @@ const FIXED = {
 const COLOR_FIXED = {
   "ハウスブレンド": "#0f5132",
   "ピッコロバンビーノ": "#7fbf7f",
+
   "ブラジルファゼンダバウ": "#ffff00",
   "コスタリカ": "#f39c12",
   "モカジャバ": "#c9a24d",
   "ブラックスリー": "#0f0f0f",
   "カフェオレモナーレ": "#e6d3b1",
   "エスプレッソクラシコ": "#3b2416",
+
   "フレンチロースト": "#c71585",
   "キリマンジャロ　スイート": "#0000ff",
   "オーガニック　デカフェ": "#e6e6fa",
+
   "シーズナル合計": "#bfa24a",
   "デカフェ　ブラジルIP農園": "#fffacd",
+
   "__COMBO__200g": "#0f766e",
   "__COMBO__Z8": "#b8a99a",
   "__COMBO__Z1": "#d08c7a",
+
   "ハニー": "#f4c430",
 };
 
@@ -551,8 +573,24 @@ const tableWraps = {
 let charts = { combo:null, beans200:null, zips8:null, zips1:null, goods:null };
 let pdfCharts = { combo:null, beans200:null, zips8:null, zips1:null, goods:null };
 
+/** ✅ 操作ボタンの折りたたみ（保存〜＋グッズ） */
+const UI_KEY = "tullys-controls-collapsed-v1";
+const btnControlsToggle = document.getElementById("btnControlsToggle");
+
+function setControlsCollapsed(isCollapsed){
+  document.body.classList.toggle("controls-collapsed", !!isCollapsed);
+  if(btnControlsToggle){
+    btnControlsToggle.setAttribute("aria-expanded", String(!isCollapsed));
+  }
+  try{ localStorage.setItem(UI_KEY, isCollapsed ? "1" : "0"); }catch(e){}
+}
+function loadControlsCollapsed(){
+  try{ return localStorage.getItem(UI_KEY) === "1"; }catch(e){ return false; }
+}
+
 /** start */
 initDefaultYear();
+setControlsCollapsed(loadControlsCollapsed());
 wireEvents();
 openYear(getCurrentYear());
 renderAllCharts();
@@ -650,14 +688,22 @@ function buildSalesTable(year){
       <tr data-rowtype="salesK">
         <td><div class="name-cell"><span class="name-text">売上</span></div></td>
         ${Array.from({length:12}).map((_,i)=>`
-          <td><input class="num-input select-on-focus" type="number" min="0" step="1" inputmode="numeric"
+          <td><input class="num-input" type="number" min="0" step="1" inputmode="numeric"
             data-rowtype="salesK" data-month="${i}" value="${Number(st.salesK?.[i]||0)}" /></td>
         `).join("")}
       </tr>
     </tbody></table>`;
   wrap.innerHTML = html;
 
-  bindNumericInputs(wrap, year);
+  bindNumericUX(wrap);
+
+  wrap.querySelectorAll('input.num-input[data-rowtype="salesK"]').forEach(inp => {
+    inp.addEventListener("input", () => {
+      sanitizeNumInput(inp);
+      saveInputsToYear(year, { silent:true });
+      renderAllCharts();
+    });
+  });
 }
 
 function buildCategoryTable(year, cat){
@@ -670,6 +716,7 @@ function buildCategoryTable(year, cat){
   html += `</tbody></table>`;
   wrap.innerHTML = html;
 
+  bindNumericUX(wrap);
   bindTableEventsForCategory(year, cat);
 }
 function buildGoodsTable(year){
@@ -685,6 +732,7 @@ function buildGoodsTable(year){
   html += `</tbody></table>`;
   wrap.innerHTML = html;
 
+  bindNumericUX(wrap);
   bindTableEventsForGoods(year);
 }
 
@@ -696,7 +744,7 @@ function rowHtmlFixed(cat, name){
       <span class="name-text">${esc(name)}</span>
     </div></td>
     ${Array.from({length:12}).map((_,i)=>`
-      <td><input class="num-input select-on-focus" type="number" min="0" step="1" inputmode="numeric"
+      <td><input class="num-input" type="number" min="0" step="1" inputmode="numeric"
         data-cat="${escAttr(cat)}" data-rowtype="fixed" data-key="${escAttr(name)}" data-month="${i}" value="0" /></td>
     `).join("")}
     <td></td>
@@ -710,7 +758,7 @@ function rowHtmlSeasonal(cat, id){
       <input class="name-input" type="text" placeholder="" data-cat="${escAttr(cat)}" data-rowtype="seasonal" data-id="${escAttr(id)}" value="" />
     </div></td>
     ${Array.from({length:12}).map((_,i)=>`
-      <td><input class="num-input select-on-focus" type="number" min="0" step="1" inputmode="numeric"
+      <td><input class="num-input" type="number" min="0" step="1" inputmode="numeric"
         data-cat="${escAttr(cat)}" data-rowtype="seasonal" data-id="${escAttr(id)}" data-month="${i}" value="0" /></td>
     `).join("")}
     <td><button class="icon-btn danger" title="削除" data-action="delete-seasonal" data-cat="${escAttr(cat)}" data-id="${escAttr(id)}">×</button></td>
@@ -724,7 +772,7 @@ function rowHtmlGoods(id, name){
       <input class="name-input" type="text" placeholder="" data-rowtype="goods" data-id="${escAttr(id)}" value="" />
     </div></td>
     ${Array.from({length:12}).map((_,i)=>`
-      <td><input class="num-input select-on-focus" type="number" min="0" step="1" inputmode="numeric"
+      <td><input class="num-input" type="number" min="0" step="1" inputmode="numeric"
         data-rowtype="goods" data-id="${escAttr(id)}" data-month="${i}" value="0" /></td>
     `).join("")}
     <td>
@@ -733,34 +781,17 @@ function rowHtmlGoods(id, name){
   </tr>`;
 }
 
-/** ✅ 数字入力：ゼロ消し不要（フォーカスで全選択）＋ iOSでも数字キーボード寄せ */
-function bindNumericInputs(root, year){
-  root.querySelectorAll('input.num-input').forEach(inp => {
-    inp.setAttribute("inputmode","numeric");
-    inp.addEventListener("focus", () => {
-      // 0を毎回消すの面倒 → フォーカスで全選択
-      try{ inp.select(); }catch(e){}
-    });
-    inp.addEventListener("pointerdown", (e) => {
-      // iOSでselectが効きにくい時の保険
-      // すでにフォーカス済みなら邪魔しない
-      if(document.activeElement === inp) return;
-      // pointerdown直後にselect
-      setTimeout(()=>{ try{ inp.select(); }catch(e){} }, 0);
-    });
+function bindTableEventsForCategory(year, cat){
+  const wrap = tableWraps[cat];
+  const st = db.years[year];
+
+  wrap.querySelectorAll('input.num-input').forEach(inp => {
     inp.addEventListener("input", () => {
       sanitizeNumInput(inp);
       saveInputsToYear(year, { silent:true });
       renderAllCharts();
     });
   });
-}
-
-function bindTableEventsForCategory(year, cat){
-  const wrap = tableWraps[cat];
-  const st = db.years[year];
-
-  bindNumericInputs(wrap, year);
 
   wrap.querySelectorAll('input.name-input[data-rowtype="seasonal"]').forEach(inp => {
     inp.addEventListener("input", () => {
@@ -785,7 +816,13 @@ function bindTableEventsForGoods(year){
   const wrap = tableWraps.goods;
   const st = db.years[year];
 
-  bindNumericInputs(wrap, year);
+  wrap.querySelectorAll('input.num-input').forEach(inp => {
+    inp.addEventListener("input", () => {
+      sanitizeNumInput(inp);
+      saveInputsToYear(year, { silent:true });
+      renderAllCharts();
+    });
+  });
 
   wrap.querySelectorAll('input.name-input[data-rowtype="goods"]').forEach(inp => {
     inp.addEventListener("input", () => {
@@ -809,6 +846,15 @@ function bindTableEventsForGoods(year){
       loadYearToInputs(year);
       renderAllCharts();
       toast("グッズ削除した");
+    });
+  });
+}
+
+/** ✅ 数字入力UX：フォーカスで全選択（0消す手間を激減） */
+function bindNumericUX(root){
+  root.querySelectorAll('input.num-input').forEach(inp => {
+    inp.addEventListener("focus", () => {
+      requestAnimationFrame(() => inp.select());
     });
   });
 }
@@ -1015,18 +1061,36 @@ function renderAllCharts(){
   );
 
   const beanDatasets = [];
-  FIXED.beans200.forEach(name => beanDatasets.push({ label:name, data: st.beans200.fixed[name] || Array(12).fill(0), color: getColorForLabel(name) }));
-  beanDatasets.push({ label:"シーズナル合計", data: sumSeasonalsMonthly(st.beans200.seasonals), color: getColorForLabel("シーズナル合計") });
+  FIXED.beans200.forEach(name => beanDatasets.push({
+    label:name, data: st.beans200.fixed[name] || Array(12).fill(0), color: getColorForLabel(name)
+  }));
+  beanDatasets.push({
+    label:"シーズナル合計",
+    data: sumSeasonalsMonthly(st.beans200.seasonals),
+    color: getColorForLabel("シーズナル合計")
+  });
   charts.beans200 = renderBarMulti("chartBeans200", charts.beans200, `② 豆200g（商品別）（${year}年）`, beanDatasets, { stacked:true });
 
   const z8Datasets = [];
-  FIXED.zips8.forEach(name => z8Datasets.push({ label:name, data: st.zips8.fixed[name] || Array(12).fill(0), color: getColorForLabel(name) }));
-  z8Datasets.push({ label:"シーズナル合計", data: sumSeasonalsMonthly(st.zips8.seasonals), color: getColorForLabel("シーズナル合計") });
+  FIXED.zips8.forEach(name => z8Datasets.push({
+    label:name, data: st.zips8.fixed[name] || Array(12).fill(0), color: getColorForLabel(name)
+  }));
+  z8Datasets.push({
+    label:"シーズナル合計",
+    data: sumSeasonalsMonthly(st.zips8.seasonals),
+    color: getColorForLabel("シーズナル合計")
+  });
   charts.zips8 = renderBarMulti("chartZips8", charts.zips8, `③ ZIPS（8P）（商品別）（${year}年）`, z8Datasets, { stacked:true });
 
   const z1Datasets = [];
-  FIXED.zips1.forEach(name => z1Datasets.push({ label:name, data: st.zips1.fixed[name] || Array(12).fill(0), color: getColorForLabel(name) }));
-  z1Datasets.push({ label:"シーズナル合計", data: sumSeasonalsMonthly(st.zips1.seasonals), color: getColorForLabel("シーズナル合計") });
+  FIXED.zips1.forEach(name => z1Datasets.push({
+    label:name, data: st.zips1.fixed[name] || Array(12).fill(0), color: getColorForLabel(name)
+  }));
+  z1Datasets.push({
+    label:"シーズナル合計",
+    data: sumSeasonalsMonthly(st.zips1.seasonals),
+    color: getColorForLabel("シーズナル合計")
+  });
   charts.zips1 = renderBarMulti("chartZips1", charts.zips1, `④ ZIPS（1P）（商品別）（${year}年）`, z1Datasets, { stacked:true });
 
   const goodsItems = st.goods.items.slice();
@@ -1034,7 +1098,11 @@ function renderAllCharts(){
   const orderMap = new Map(); others.forEach((it, idx)=> orderMap.set(it.id, idx));
   const goodsDatasets = goodsItems.map(it => {
     const idx = (normalizeName(it.name)===normalizeName("ハニー")) ? 0 : (orderMap.get(it.id) ?? 0);
-    return { label: normalizeName(it.name) || "(無名)", data: Array.isArray(it.values) ? it.values : Array(12).fill(0), color: getGoodsColor(it.name, idx) };
+    return {
+      label: normalizeName(it.name) || "(無名)",
+      data: Array.isArray(it.values) ? it.values : Array(12).fill(0),
+      color: getGoodsColor(it.name, idx)
+    };
   });
   charts.goods = renderBarMulti("chartGoods", charts.goods, `⑤ グッズ（名称別）（${year}年）`, goodsDatasets, { stacked:true });
 
@@ -1067,7 +1135,6 @@ function renderBarMulti(canvasId, chartInstance, title, datasets, opt={}){
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      animation: false,
       plugins: { legend: { display: true } },
       scales: {
         x: { stacked },
@@ -1077,7 +1144,7 @@ function renderBarMulti(canvasId, chartInstance, title, datasets, opt={}){
   });
 }
 
-/** ①専用：棒 + 売上折れ線（右軸）
+/** ✅ ①専用：棒 + 売上折れ線（右軸）
  *  売上入力：千円
  *  表示：万（小数1桁）
  */
@@ -1087,13 +1154,12 @@ function renderComboWithSales(canvasId, chartInstance, title, barDatasets, sales
   const ctx = canvas.getContext("2d");
   if(chartInstance) chartInstance.destroy();
 
-  // ✅ PDFで右軸ズレやすい問題：レイアウト/ピクセルを固定寄せ
-  const stabilizePdf = {
-    id: "stabilizePdf",
+  // ✅ 右軸の余白を安定（PDFズレ対策）
+  const widenY2 = {
+    id: "widenY2",
     beforeLayout(chart){
-      if(!isPdf) return;
-      chart.options.layout = chart.options.layout || {};
-      chart.options.layout.padding = { left: 10, right: 34, top: 8, bottom: 8 };
+      const y2 = chart.scales?.y2;
+      if(y2) y2.paddingRight = 12;
     }
   };
 
@@ -1110,13 +1176,15 @@ function renderComboWithSales(canvasId, chartInstance, title, barDatasets, sales
   const line = {
     type: "line",
     label: "売上（万）",
-    data: Array.isArray(salesK) ? salesK : Array(12).fill(0), // 中身は千円のまま
+    data: Array.isArray(salesK) ? salesK : Array(12).fill(0), // 千円のまま持つ
     borderColor: "#000000",
     backgroundColor: "rgba(0,0,0,0)",
     pointBackgroundColor: "#000000",
     pointRadius: 3,
     tension: 0.25,
     yAxisID: "y2",
+
+    // ✅ 月ごとの数字ラベル（万 / 小数1桁）
     datalabels: {
       display: true,
       align: "top",
@@ -1139,7 +1207,7 @@ function renderComboWithSales(canvasId, chartInstance, title, barDatasets, sales
       maintainAspectRatio: false,
       devicePixelRatio: isPdf ? 1 : undefined,
       animation: false,
-      layout: { padding: { left: 8, right: isPdf ? 34 : 10, top: 6, bottom: 6 } },
+      layout: { padding: { left: 8, right: isPdf ? 28 : 10, top: 6, bottom: 6 } },
       plugins: {
         legend: { display: true },
         datalabels: { display: (ctx) => ctx.dataset.type === "line" }
@@ -1151,16 +1219,12 @@ function renderComboWithSales(canvasId, chartInstance, title, barDatasets, sales
           position: "right",
           beginAtZero: true,
           grid: { drawOnChartArea: false },
-          ticks: {
-            callback: (v) => {
-              const n = Number(v)||0; // 千円
-              return (n/10).toFixed(1);
-            }
-          }
+          // ✅ 右軸表示も万（小数1桁）
+          ticks: { callback: (v) => `${(Number(v)/10).toFixed(1)}` }
         }
       }
     },
-    plugins: [stabilizePdf, ChartDataLabels]
+    plugins: [widenY2, ChartDataLabels]
   });
 }
 
@@ -1241,7 +1305,7 @@ async function exportPdf2Pages(){
   });
   pdfCharts.goods = renderBarMulti("pdfChartGoods", pdfCharts.goods, `⑤ グッズ（名称別）（${year}年）`, goodsDatasets, { stacked:true });
 
-  await wait(250);
+  await wait(220);
 
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ orientation: "portrait", unit: "pt", format: "a4" });
@@ -1305,6 +1369,15 @@ function addGoodsItem(year){
 
 /** イベント */
 function wireEvents(){
+  // ✅ 📶 操作トグル
+  if(btnControlsToggle){
+    btnControlsToggle.addEventListener("click", () => {
+      const now = document.body.classList.contains("controls-collapsed");
+      setControlsCollapsed(!now);
+      toast(!now ? "操作ボタンを省略した" : "操作ボタンを表示した");
+    });
+  }
+
   btnLoadYear.addEventListener("click", () => {
     const y = requireYear(); if(!y) return;
     openYear(y);
