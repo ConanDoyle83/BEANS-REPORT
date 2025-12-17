@@ -30,9 +30,14 @@
       background: radial-gradient(1200px 500px at 10% -10%, rgba(255,255,255,.07), transparent 60%),
                   linear-gradient(160deg,var(--bg1),var(--bg2));
       color:#fff;
+
+      /* ✅ Dock分の余白：JSで動的に上書きする */
+      padding-top: 92px;
     }
+
+    /* ✅ 上のブランドだけ残す（操作はDockに移動） */
     header{
-      position:sticky; top:0; z-index:20;
+      position:sticky; top:0; z-index:10;
       background: linear-gradient(180deg, rgba(0,0,0,.55), rgba(0,0,0,.25));
       backdrop-filter: blur(10px);
       border-bottom:1px solid rgba(255,255,255,.08);
@@ -45,6 +50,8 @@
     }
     .brand{ display:flex; gap:10px; align-items:baseline; font-weight:900; }
     .brand small{ opacity:.75; font-weight:700; }
+
+    /* ===== 元のcontrols/pill/input/button ===== */
     .controls{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
     .pill{
       background: rgba(255,255,255,.08);
@@ -239,6 +246,7 @@
       max-width:min(92vw, 820px);
       white-space:nowrap;
       overflow:hidden; text-overflow:ellipsis;
+      z-index: 10000;
     }
     .toast.show{ opacity:1; }
     .footer-note{
@@ -246,17 +254,100 @@
       font-size:12px;
       margin:12px 2px 0;
     }
+
+    /* =========================================================
+       ✅ Floating Dock + minimize (Wi-Fi button vibe)
+       ========================================================= */
+    .dock{
+      position: fixed;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 9999;
+
+      width: min(1180px, calc(100vw - 18px));
+      border-radius: 18px;
+      padding: 10px;
+
+      background: rgba(0,0,0,.35);
+      border: 1px solid rgba(255,255,255,.14);
+      backdrop-filter: blur(14px);
+      box-shadow: 0 18px 50px rgba(0,0,0,.38);
+
+      transition: width .18s ease, padding .18s ease, opacity .18s ease;
+    }
+    .dock-inner{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .dock-toggle{
+      flex: 0 0 auto;
+      font-size: 18px;
+      font-weight: 900;
+      line-height: 1;
+      padding: 10px 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.22);
+      background: rgba(255,255,255,.12);
+      color: #fff;
+      cursor: pointer;
+      box-shadow: 0 8px 18px rgba(0,0,0,.35);
+    }
+    /* Dock内controls：基本1段、はみ出たら横スクロール */
+    .dock .controls{
+      width: 100%;
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 2px;
+    }
+    .dock .controls::-webkit-scrollbar{ height: 8px; }
+    .dock .controls::-webkit-scrollbar-thumb{
+      background: rgba(255,255,255,.18);
+      border-radius: 999px;
+    }
+    .dock input[type="text"], .dock input[type="number"]{ padding: 8px 10px; }
+    .dock button{ padding: 9px 11px; border-radius: 14px; }
+
+    /* 最小化状態：中身隠してボタンだけ */
+    .dock.minimized{
+      width: auto;
+      padding: 8px;
+      opacity: .92;
+    }
+    .dock.minimized #dockControls{ display:none; }
+
+    @media (max-width: 720px){
+      .dock-toggle{ padding: 12px 16px; font-size: 20px; }
+      .dock .controls{
+        flex-wrap: wrap;
+        overflow-x: visible;
+      }
+    }
   </style>
 </head>
 
 <body>
+
+<!-- ✅ ブランド表示だけ残す -->
 <header>
   <div class="header-inner">
     <div class="brand">
       豆・ZIPS・グッズ <small>年別 月次グラフ（5つ）</small>
     </div>
+  </div>
+</header>
 
-    <div class="controls">
+<!-- ✅ 常に上に浮く操作Dock（≡で最小化） -->
+<div class="dock" id="dock">
+  <div class="dock-inner">
+    <button class="dock-toggle" id="dockToggle" title="操作バーを最小化 / 復帰">≡</button>
+
+    <div class="controls" id="dockControls">
       <div class="pill">
         <label for="yearInput">年（手入力）</label>
         <input id="yearInput" type="number" inputmode="numeric" placeholder="例：2025" min="2000" max="2100" />
@@ -274,7 +365,7 @@
       <button id="quickAddGoods" class="secondary">＋グッズ</button>
     </div>
   </div>
-</header>
+</div>
 
 <main>
   <div class="grid">
@@ -455,19 +546,19 @@ const COLOR_FIXED = {
   "ハウスブレンド": "#0f5132",
   "ピッコロバンビーノ": "#7fbf7f",
 
-  "ブラジルファゼンダバウ": "#ffff00",        // ✅更新
+  "ブラジルファゼンダバウ": "#ffff00",
   "コスタリカ": "#f39c12",
   "モカジャバ": "#c9a24d",
   "ブラックスリー": "#0f0f0f",
   "カフェオレモナーレ": "#e6d3b1",
   "エスプレッソクラシコ": "#3b2416",
 
-  "フレンチロースト": "#c71585",              // ✅更新
-  "キリマンジャロ　スイート": "#0000ff",       // ✅更新（全角スペース表記のままOK）
-  "オーガニック　デカフェ": "#e6e6fa",         // ✅更新（lavender）
+  "フレンチロースト": "#c71585",
+  "キリマンジャロ　スイート": "#0000ff",
+  "オーガニック　デカフェ": "#e6e6fa",
 
   "シーズナル合計": "#bfa24a",
-  "デカフェ　ブラジルIP農園": "#fffacd",       // ✅追加
+  "デカフェ　ブラジルIP農園": "#fffacd",
 
   "__COMBO__200g": "#0f766e",
   "__COMBO__Z8": "#b8a99a",
@@ -515,6 +606,7 @@ let pdfCharts = { combo:null, beans200:null, zips8:null, zips1:null, goods:null 
 /** start */
 initDefaultYear();
 wireEvents();
+setupDockMinimize();     // ✅ Dock機能：最小化+保存+余白調整
 openYear(getCurrentYear());
 renderAllCharts();
 
@@ -543,7 +635,7 @@ function makeEmptyYearState(year){
   const fixedZ1 = {}; FIXED.zips1.forEach(n => fixedZ1[n] = Array(12).fill(0));
   return {
     year,
-    salesK: Array(12).fill(0), // ✅ 売上（千円）
+    salesK: Array(12).fill(0),
     beans200: { fixed: fixedBeans, seasonals: [] },
     zips8: { fixed: fixedZ8, seasonals: [] },
     zips1: { fixed: fixedZ1, seasonals: [] },
@@ -569,7 +661,6 @@ function hydrateFixed(year){
 
   st.goods = st.goods || { items:[] };
   st.goods.items = Array.isArray(st.goods.items) ? st.goods.items : [];
-  // ✅ ハニーが消えてたら復活
   if(!st.goods.items.some(it => normalizeName(it.name) === normalizeName("ハニー"))){
     st.goods.items.unshift({ id: uid(), name: "ハニー", values: Array(12).fill(0) });
   }
@@ -649,7 +740,6 @@ function buildGoodsTable(year){
   const st = db.years[year];
   const wrap = tableWraps.goods; if(!wrap) return;
 
-  // ハニーを上に寄せて見やすく
   const honey = st.goods.items.filter(it => normalizeName(it.name) === normalizeName("ハニー"));
   const others = st.goods.items.filter(it => normalizeName(it.name) !== normalizeName("ハニー"));
   const ordered = [...honey, ...others];
@@ -762,7 +852,6 @@ function bindTableEventsForGoods(year){
     btn.addEventListener("click", () => {
       const id = btn.getAttribute("data-id");
       const it = st.goods.items.find(x => x.id === id);
-      // ✅ ハニーは絶対消さない（二重ガード）
       if(it && normalizeName(it.name) === normalizeName("ハニー")){
         toast("ハニーは削除できん仕様やで");
         return;
@@ -783,7 +872,6 @@ function bindTableEventsForGoods(year){
 function loadYearToInputs(year){
   const st = db.years[year];
 
-  // sales
   const sWrap = tableWraps.sales;
   if(sWrap){
     for(let m=0;m<12;m++){
@@ -831,7 +919,6 @@ function saveInputsToYear(year, opts={silent:false}){
   ensureYearState(year);
   const st = db.years[year];
 
-  // sales
   const sWrap = tableWraps.sales;
   if(sWrap){
     for(let m=0;m<12;m++){
@@ -874,7 +961,6 @@ function saveInputsToYear(year, opts={silent:false}){
     });
   }
 
-  // ✅ ハニー必須（保存時にも復活）
   if(!st.goods.items.some(it => normalizeName(it.name) === normalizeName("ハニー"))){
     st.goods.items.unshift({ id: uid(), name: "ハニー", values: Array(12).fill(0) });
   }
@@ -888,13 +974,12 @@ function saveInputsToYear(year, opts={silent:false}){
  * =========================== */
 function normalizeName(s){
   return String(s || "")
-    .replace(/\u3000/g, " ")      // 全角スペース -> 半角
-    .replace(/\s+/g, " ")        // 連続スペース潰す
+    .replace(/\u3000/g, " ")
+    .replace(/\s+/g, " ")
     .trim();
 }
 function getColorForLabel(label){
   const n = normalizeName(label);
-  // COLOR_FIXEDも正規化キーで探す
   for(const k in COLOR_FIXED){
     if(normalizeName(k) === n) return COLOR_FIXED[k];
   }
@@ -944,7 +1029,6 @@ function updateAllChips(year){
     });
   });
 
-  // goods chips（ハニー優先 + 他は薄い順）
   const goods = st.goods.items.slice();
   const others = goods.filter(it => normalizeName(it.name) !== normalizeName("ハニー"));
   const orderMap = new Map();
@@ -976,7 +1060,6 @@ function renderAllCharts(){
   const z8Total = sumMapMonthly(st.zips8.fixed).map((v,i)=> v + sumSeasonalsMonthly(st.zips8.seasonals)[i]);
   const z1Total = sumMapMonthly(st.zips1.fixed).map((v,i)=> v + sumSeasonalsMonthly(st.zips1.seasonals)[i]);
 
-  // ✅ ① combo + 売上（千円）黒ライン（右軸）
   charts.combo = renderComboWithSales(
     "chartCombo",
     charts.combo,
@@ -989,7 +1072,6 @@ function renderAllCharts(){
     st.salesK || Array(12).fill(0)
   );
 
-  // ② beans
   const beanDatasets = [];
   FIXED.beans200.forEach(name => beanDatasets.push({
     label:name, data: st.beans200.fixed[name] || Array(12).fill(0), color: getColorForLabel(name)
@@ -1001,7 +1083,6 @@ function renderAllCharts(){
   });
   charts.beans200 = renderBarMulti("chartBeans200", charts.beans200, `② 豆200g（商品別）（${year}年）`, beanDatasets, { stacked:true });
 
-  // ③ zips8
   const z8Datasets = [];
   FIXED.zips8.forEach(name => z8Datasets.push({
     label:name, data: st.zips8.fixed[name] || Array(12).fill(0), color: getColorForLabel(name)
@@ -1013,7 +1094,6 @@ function renderAllCharts(){
   });
   charts.zips8 = renderBarMulti("chartZips8", charts.zips8, `③ ZIPS（8P）（商品別）（${year}年）`, z8Datasets, { stacked:true });
 
-  // ④ zips1
   const z1Datasets = [];
   FIXED.zips1.forEach(name => z1Datasets.push({
     label:name, data: st.zips1.fixed[name] || Array(12).fill(0), color: getColorForLabel(name)
@@ -1025,7 +1105,6 @@ function renderAllCharts(){
   });
   charts.zips1 = renderBarMulti("chartZips1", charts.zips1, `④ ZIPS（1P）（商品別）（${year}年）`, z1Datasets, { stacked:true });
 
-  // ⑤ goods
   const goodsItems = st.goods.items.slice();
   const others = goodsItems.filter(it => normalizeName(it.name) !== normalizeName("ハニー"));
   const orderMap = new Map(); others.forEach((it, idx)=> orderMap.set(it.id, idx));
@@ -1077,7 +1156,6 @@ function renderBarMulti(canvasId, chartInstance, title, datasets, opt={}){
   });
 }
 
-/** ✅ ①専用：棒 + 売上折れ線（右軸） */
 function renderComboWithSales(canvasId, chartInstance, title, barDatasets, salesK){
   const canvas = document.getElementById(canvasId);
   if(!canvas) return null;
@@ -1294,7 +1372,7 @@ function wireEvents(){
   btnClearYear.addEventListener("click", () => {
     const y = requireYear(); if(!y) return;
     if(!confirm(`${y}年の入力を全部ゼロに戻すで。ほんまに？`)) return;
-    db.years[y] = makeEmptyYearState(y); // ハニーも戻る
+    db.years[y] = makeEmptyYearState(y);
     persistDB();
     openYear(y);
     toast(`${y}年をリセットした`);
@@ -1311,6 +1389,42 @@ function wireEvents(){
   quickAdd.z8.addEventListener("click", () => { const y=requireYear(); if(y) addSeasonal(y,"zips8"); });
   quickAdd.z1.addEventListener("click", () => { const y=requireYear(); if(y) addSeasonal(y,"zips1"); });
   quickAdd.goods.addEventListener("click", () => { const y=requireYear(); if(y) addGoodsItem(y); });
+}
+
+/** ===========================
+ *  ✅ Dock：最小化 + 状態保存 + 余白自動調整
+ * =========================== */
+function setupDockMinimize(){
+  const DOCK_STATE_KEY = "dock_minimized_v1";
+  const dock = document.getElementById("dock");
+  const dockToggle = document.getElementById("dockToggle");
+  if(!dock || !dockToggle) return;
+
+  function applyDockPadding(){
+    const h = dock.getBoundingClientRect().height;
+    const topGap = 16;
+    document.body.style.paddingTop = `${Math.ceil(h + topGap)}px`;
+  }
+
+  function setDockMinimized(min){
+    dock.classList.toggle("minimized", !!min);
+    localStorage.setItem(DOCK_STATE_KEY, min ? "1" : "0");
+    applyDockPadding();
+  }
+
+  dockToggle.addEventListener("click", () => {
+    const now = dock.classList.contains("minimized");
+    setDockMinimized(!now);
+    toast(!now ? "操作バーを最小化した" : "操作バーを表示した");
+  });
+
+  // 初期復元
+  const saved = localStorage.getItem(DOCK_STATE_KEY) === "1";
+  setDockMinimized(saved);
+
+  // レイアウト確定後にも補正
+  setTimeout(applyDockPadding, 50);
+  window.addEventListener("resize", applyDockPadding);
 }
 
 /** ===========================
