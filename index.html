@@ -7,7 +7,7 @@
 
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <!-- ✅ 折れ線に数値ラベル表示 -->
+  <!-- 折れ線に数値ラベル表示 -->
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
 
   <!-- PDF export -->
@@ -33,8 +33,10 @@
                   linear-gradient(160deg,var(--bg1),var(--bg2));
       color:#fff;
     }
+    body.noscroll{ overflow:hidden; }
+
     header{
-      position:sticky; top:0; z-index:20;
+      position:sticky; top:0; z-index:50;
       background: linear-gradient(180deg, rgba(0,0,0,.55), rgba(0,0,0,.25));
       backdrop-filter: blur(10px);
       border-bottom:1px solid rgba(255,255,255,.08);
@@ -48,51 +50,19 @@
     .brand{ display:flex; gap:10px; align-items:baseline; font-weight:900; }
     .brand small{ opacity:.75; font-weight:700; }
 
-    /* ===== ヘッダー右の操作（省略対応） ===== */
-    .dock{
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-      align-items:flex-end;
-      min-width:min(680px, 100%);
-    }
-    .dock-row{
-      display:flex;
-      gap:10px;
-      align-items:center;
-      flex-wrap:wrap;
+    .header-actions{
+      display:flex; gap:10px; align-items:center; flex-wrap:wrap;
       justify-content:flex-end;
     }
-    .dock-label{
+    .year-badge{
+      padding:7px 10px;
+      border-radius:999px;
+      background: rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.12);
       font-size:12px;
-      opacity:.9;
-      padding:6px 10px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.08);
+      opacity:.95;
+      white-space:nowrap;
     }
-    .dock-year{
-      width:120px;
-      text-align:right;
-    }
-    .dock-body{ display:block; }
-    body.controls-collapsed .dock-body{ display:none; }
-
-    .dock-grid{
-      display:flex;
-      flex-wrap:wrap;
-      gap:10px;
-      justify-content:flex-end;
-    }
-
-    .pill{
-      background: rgba(255,255,255,.08);
-      border:1px solid rgba(255,255,255,.12);
-      border-radius:999px;
-      padding:8px 10px;
-      display:flex; gap:8px; align-items:center;
-    }
-    .pill label{ font-size:12px; opacity:.9; }
 
     input[type="text"], input[type="number"]{
       font: inherit;
@@ -103,8 +73,6 @@
       padding:8px 10px;
       outline:none;
     }
-    input[type="number"]{ width:90px; text-align:right; }
-
     button{
       font: inherit;
       cursor:pointer;
@@ -122,6 +90,14 @@
       box-shadow:none;
     }
     button.danger{ background: rgba(178,58,58,.88); }
+    .icon-top{
+      border-radius:999px;
+      background: rgba(255,255,255,.10);
+      border:1px solid rgba(255,255,255,.16);
+      box-shadow:none;
+      padding:10px 12px;
+      font-weight:900;
+    }
 
     main{ max-width:1200px; margin:0 auto; padding:14px; }
     .grid{ display:grid; grid-template-columns: 1fr; gap:12px; }
@@ -144,9 +120,20 @@
     .card-sub{ font-size:12px; color:var(--muted); }
     .card-body{ padding:12px 14px; }
 
-    .row-tools{
-      display:flex; gap:10px; flex-wrap:wrap; align-items:center;
-      margin:0 0 10px;
+    .charts{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:12px;
+    }
+    @media (min-width: 980px){
+      .charts{ grid-template-columns: 1fr 1fr; }
+    }
+    .chart-box{
+      background:#fff;
+      border:1px solid rgba(42,26,18,.12);
+      border-radius:14px;
+      padding:10px;
+      min-height:270px;
     }
 
     .table-wrap{
@@ -219,54 +206,90 @@
       color:#8b1d1d;
     }
 
-    .charts{
-      display:grid;
-      grid-template-columns: 1fr;
-      gap:12px;
+    /* ===== 上から出る「操作パネル」 ===== */
+    .drawer-backdrop{
+      position:fixed; inset:0;
+      background: rgba(0,0,0,.55);
+      opacity:0; pointer-events:none;
+      transition: opacity .18s ease;
+      z-index:80;
     }
-    @media (min-width: 980px){
-      .charts{ grid-template-columns: 1fr 1fr; }
-    }
-    .chart-box{
-      background:#fff;
-      border:1px solid rgba(42,26,18,.12);
-      border-radius:14px;
-      padding:10px;
-      min-height:270px;
+    body.drawer-open .drawer-backdrop{
+      opacity:1; pointer-events:auto;
     }
 
-    /* PDF area (portrait A4) */
-    .pdf-pages{
-      display:none;
-      width: 700px;
-      background:#fff;
-      color:#111;
-      padding:28px;
+    .drawer{
+      position:fixed; left:0; right:0; top:0;
+      transform: translateY(-110%);
+      transition: transform .22s ease;
+      z-index:90;
+      padding: 10px 12px env(safe-area-inset-top);
     }
-    .pdf-title{
+    body.drawer-open .drawer{
+      transform: translateY(0);
+    }
+
+    .drawer-panel{
+      max-width:1200px;
+      margin: 0 auto;
+      border-radius: 18px;
+      border:1px solid rgba(255,255,255,.12);
+      background: linear-gradient(180deg, rgba(20,12,8,.92), rgba(0,0,0,.70));
+      backdrop-filter: blur(14px);
+      box-shadow: 0 22px 60px rgba(0,0,0,.45);
+      overflow:hidden;
+    }
+    .drawer-head{
+      display:flex; gap:10px; align-items:center; justify-content:space-between;
+      padding:12px 12px;
+      border-bottom:1px solid rgba(255,255,255,.10);
+    }
+    .drawer-title{
       font-weight:900;
-      font-size:16px;
-      margin:0 0 8px;
+      letter-spacing:.02em;
+      display:flex; gap:10px; align-items:center;
     }
-    .pdf-sub{
-      font-size:11px;
-      color:#333;
-      margin:0 0 10px;
+    .drawer-title small{ opacity:.8; font-weight:700; }
+    .drawer-close{
+      border-radius:999px;
+      background: rgba(255,255,255,.10);
+      border:1px solid rgba(255,255,255,.16);
+      box-shadow:none;
+      padding:10px 12px;
+      font-weight:900;
     }
-    .pdf-col{
-      display:grid;
-      grid-template-columns: 1fr;
-      gap:12px;
-    }
-    .pdf-card{
-      border:1px solid rgba(0,0,0,.12);
-      border-radius:12px;
+
+    .drawer-body{
       padding:12px;
-      min-height:230px;
+      /* ✅ ここが“画面半分埋まる問題”の対策：高さ制限 */
+      max-height: 55vh;
+      overflow:auto;
     }
-    .pdf-card canvas{ width:100% !important; height:180px !important; }
-    .pdf-card.tall{ min-height:320px; }
-    .pdf-card.tall canvas{ height:240px !important; }
+    @media (orientation: landscape){
+      .drawer-body{ max-height: 42vh; } /* 横画面はさらに低く */
+    }
+
+    .drawer-row{
+      display:flex; flex-wrap:wrap; gap:10px;
+      align-items:center; justify-content:flex-end;
+    }
+    .drawer-block{
+      display:flex; flex-wrap:wrap; gap:10px;
+      justify-content:flex-end;
+      margin-top:10px;
+    }
+    .drawer-pill{
+      display:flex; gap:8px; align-items:center;
+      padding:8px 10px;
+      border-radius:999px;
+      background: rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.12);
+    }
+    .drawer-pill label{ font-size:12px; opacity:.9; }
+    .drawer-year{
+      width:120px;
+      text-align:right;
+    }
 
     .toast{
       position:fixed; left:50%; bottom:18px; transform:translateX(-50%);
@@ -280,58 +303,84 @@
       max-width:min(92vw, 820px);
       white-space:nowrap;
       overflow:hidden; text-overflow:ellipsis;
+      z-index:120;
     }
     .toast.show{ opacity:1; }
+
     .footer-note{
       opacity:.85;
       font-size:12px;
       margin:12px 2px 0;
     }
 
-    /* ✅ 月次棒グラフ（5つ）右のWi-Fiボタン */
-    .mini-toggle{
-      width:auto;
-      padding:10px 12px;
-      border-radius:999px;
-      background: rgba(255,255,255,.10);
-      border:1px solid rgba(255,255,255,.16);
-      box-shadow:none;
-      color:var(--text);
-      font-weight:900;
+    /* PDF area */
+    .pdf-pages{
+      display:none;
+      width: 700px;
+      background:#fff;
+      color:#111;
+      padding:28px;
     }
-    .mini-toggle:active{ transform: translateY(1px); }
+    .pdf-title{ font-weight:900; font-size:16px; margin:0 0 8px; }
+    .pdf-sub{ font-size:11px; color:#333; margin:0 0 10px; }
+    .pdf-col{ display:grid; grid-template-columns: 1fr; gap:12px; }
+    .pdf-card{ border:1px solid rgba(0,0,0,.12); border-radius:12px; padding:12px; min-height:230px; }
+    .pdf-card canvas{ width:100% !important; height:180px !important; }
+    .pdf-card.tall{ min-height:320px; }
+    .pdf-card.tall canvas{ height:240px !important; }
   </style>
 </head>
 
 <body>
+
+<!-- ✅ Backdrop -->
+<div class="drawer-backdrop" id="drawerBackdrop" aria-hidden="true"></div>
+
+<!-- ✅ Drawer -->
+<div class="drawer" id="drawer" aria-hidden="true">
+  <div class="drawer-panel" role="dialog" aria-modal="true" aria-label="操作パネル">
+    <div class="drawer-head">
+      <div class="drawer-title">
+        📶 操作 <small>（年 / 保存 / PDF / 追加）</small>
+      </div>
+      <button class="drawer-close" id="btnDrawerClose" type="button">✕</button>
+    </div>
+
+    <div class="drawer-body">
+      <div class="drawer-row">
+        <div class="drawer-pill">
+          <label for="yearInput">年</label>
+          <input id="yearInput" class="drawer-year" type="number" inputmode="numeric" placeholder="例：2025" min="2000" max="2100" />
+        </div>
+        <button id="btnLoadYear" class="secondary" type="button">この年を開く</button>
+      </div>
+
+      <div class="drawer-block">
+        <button id="btnSave" type="button">保存</button>
+        <button id="btnRender" class="secondary" type="button">グラフ更新</button>
+        <button id="btnClearYear" class="danger" type="button">この年をリセット</button>
+        <button id="btnPdf" class="secondary" type="button">PDF出力（A4縦/2ページ）</button>
+      </div>
+
+      <div class="drawer-block">
+        <button id="quickAddBeansSeasonal" class="secondary" type="button">＋豆シーズナル</button>
+        <button id="quickAddZ8Seasonal" class="secondary" type="button">＋Z8シーズナル</button>
+        <button id="quickAddZ1Seasonal" class="secondary" type="button">＋Z1シーズナル</button>
+        <button id="quickAddGoods" class="secondary" type="button">＋グッズ</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <header>
   <div class="header-inner">
     <div class="brand">
       豆・ZIPS・グッズ <small>年別 月次グラフ（5つ）</small>
     </div>
 
-    <!-- ✅ ヘッダー右：年入力 + （保存〜＋グッズを折りたたみ可） -->
-    <div class="dock" aria-label="操作">
-      <div class="dock-row">
-        <span class="dock-label">年</span>
-        <input id="yearInput" class="dock-year" type="number" inputmode="numeric" placeholder="例：2025" min="2000" max="2100" />
-        <button id="btnLoadYear" class="secondary" style="width:auto;">この年を開く</button>
-      </div>
-
-      <div id="dockBody" class="dock-body">
-        <div class="dock-grid">
-          <button id="btnSave">保存</button>
-          <button id="btnRender" class="secondary">グラフ更新</button>
-          <button id="btnClearYear" class="danger">この年をリセット</button>
-          <button id="btnPdf" class="secondary">PDF出力（A4縦/2ページ）</button>
-        </div>
-        <div class="dock-grid">
-          <button id="quickAddBeansSeasonal" class="secondary">＋豆シーズナル</button>
-          <button id="quickAddZ8Seasonal" class="secondary">＋Z8シーズナル</button>
-          <button id="quickAddZ1Seasonal" class="secondary">＋Z1シーズナル</button>
-          <button id="quickAddGoods" class="secondary">＋グッズ</button>
-        </div>
-      </div>
+    <div class="header-actions">
+      <div class="year-badge" id="yearBadge">年：—</div>
+      <button class="icon-top" id="btnDrawerOpen" type="button" title="操作パネルを開く">📶 操作</button>
     </div>
   </div>
 </header>
@@ -344,18 +393,15 @@
         <div>
           <div class="card-title">月次棒グラフ（5つ）</div>
           <div class="card-sub">
-            ①豆200g＋ZIPS合計（200g / ZIPS8P / ZIPS1P）＋ 売上（右軸：万・小数1桁）＋月ごと数値表示｜
-            ②豆200g（商品別、指定色固定。シーズナルは合計1枠）｜
-            ③ZIPS（8P）（商品別、指定色固定。シーズナルは合計1枠）｜
-            ④ZIPS（1P）（商品別、指定色固定。シーズナルは合計1枠）｜
-            ⑤グッズ（名称別：ハニー固定＋他は薄くなるグレー）
+            ①豆200g＋ZIPS合計＋売上（右軸：万・小数1桁）＋月ごと数値表示｜
+            ②豆200g（商品別、固定色・シーズナル合計）｜
+            ③ZIPS8P（商品別、固定色・シーズナル合計）｜
+            ④ZIPS1P（商品別、固定色・シーズナル合計）｜
+            ⑤グッズ（ハニー固定＋他グレー薄）
           </div>
         </div>
-
-        <!-- ✅ 省略/展開ボタン（ここが“月次グラフ（5つ）”の右） -->
-        <button id="btnControlsToggle" class="mini-toggle" type="button" aria-expanded="true" title="操作ボタンを省略/表示">
-          📶 操作
-        </button>
+        <!-- スマホ操作の導線（ここにも置く） -->
+        <button class="icon-top" id="btnDrawerOpen2" type="button" title="操作パネルを開く">📶 操作</button>
       </div>
 
       <div class="card-body">
@@ -389,7 +435,7 @@
           <div class="card-sub">シーズナルは何個でも追加OK（グラフでは「シーズナル合計」1枠）</div>
         </div>
         <div class="row-tools">
-          <button class="secondary" id="addSeasonalBeans200">シーズナル追加</button>
+          <button class="secondary" id="addSeasonalBeans200" type="button">シーズナル追加</button>
         </div>
       </div>
       <div class="card-body">
@@ -404,7 +450,7 @@
           <div class="card-sub">シーズナルは何個でも追加OK（グラフでは「シーズナル合計」1枠）</div>
         </div>
         <div class="row-tools">
-          <button class="secondary" id="addSeasonalZips8">シーズナル追加</button>
+          <button class="secondary" id="addSeasonalZips8" type="button">シーズナル追加</button>
         </div>
       </div>
       <div class="card-body">
@@ -419,7 +465,7 @@
           <div class="card-sub">シーズナルは何個でも追加OK（グラフでは「シーズナル合計」1枠）</div>
         </div>
         <div class="row-tools">
-          <button class="secondary" id="addSeasonalZips1">シーズナル追加</button>
+          <button class="secondary" id="addSeasonalZips1" type="button">シーズナル追加</button>
         </div>
       </div>
       <div class="card-body">
@@ -434,7 +480,7 @@
           <div class="card-sub">ハニーは削除不可。他は追加・削除OK。色はハニー固定＋他グレー薄く。</div>
         </div>
         <div class="row-tools">
-          <button class="secondary" id="addGoodsItem">追加</button>
+          <button class="secondary" id="addGoodsItem" type="button">追加</button>
         </div>
       </div>
       <div class="card-body">
@@ -482,58 +528,37 @@ const STORAGE_KEY = "tullys-beans-sales-v5";
 /** 固定商品 */
 const FIXED = {
   beans200: [
-    "ハウスブレンド",
-    "ピッコロバンビーノ",
-    "ブラジルファゼンダバウ",
-    "コスタリカ",
-    "モカジャバ",
-    "ブラックスリー",
-    "カフェオレモナーレ",
-    "エスプレッソクラシコ",
-    "フレンチロースト",
-    "キリマンジャロ　スイート",
-    "オーガニック　デカフェ",
+    "ハウスブレンド","ピッコロバンビーノ","ブラジルファゼンダバウ","コスタリカ","モカジャバ",
+    "ブラックスリー","カフェオレモナーレ","エスプレッソクラシコ","フレンチロースト",
+    "キリマンジャロ　スイート","オーガニック　デカフェ",
   ],
   zips8: [
-    "ハウスブレンド",
-    "ブラジルファゼンダバウ",
-    "コスタリカ",
-    "キリマンジャロ　スイート",
-    "デカフェ　ブラジルIP農園",
+    "ハウスブレンド","ブラジルファゼンダバウ","コスタリカ","キリマンジャロ　スイート","デカフェ　ブラジルIP農園",
   ],
   zips1: [
-    "ハウスブレンド",
-    "ブラジルファゼンダバウ",
-    "コスタリカ",
-    "キリマンジャロ　スイート",
-    "デカフェ　ブラジルIP農園",
+    "ハウスブレンド","ブラジルファゼンダバウ","コスタリカ","キリマンジャロ　スイート","デカフェ　ブラジルIP農園",
   ],
   goodsDefault: ["ハニー"]
 };
 
-/** 固定カラー（同名は全グラフ同色） */
+/** 固定カラー */
 const COLOR_FIXED = {
   "ハウスブレンド": "#0f5132",
   "ピッコロバンビーノ": "#7fbf7f",
-
   "ブラジルファゼンダバウ": "#ffff00",
   "コスタリカ": "#f39c12",
   "モカジャバ": "#c9a24d",
   "ブラックスリー": "#0f0f0f",
   "カフェオレモナーレ": "#e6d3b1",
   "エスプレッソクラシコ": "#3b2416",
-
   "フレンチロースト": "#c71585",
   "キリマンジャロ　スイート": "#0000ff",
   "オーガニック　デカフェ": "#e6e6fa",
-
   "シーズナル合計": "#bfa24a",
   "デカフェ　ブラジルIP農園": "#fffacd",
-
   "__COMBO__200g": "#0f766e",
   "__COMBO__Z8": "#b8a99a",
   "__COMBO__Z1": "#d08c7a",
-
   "ハニー": "#f4c430",
 };
 
@@ -542,6 +567,8 @@ let db = loadDB();
 /** UI refs */
 const toastEl = document.getElementById("toast");
 const yearInput = document.getElementById("yearInput");
+const yearBadge = document.getElementById("yearBadge");
+
 const btnLoadYear = document.getElementById("btnLoadYear");
 const btnSave = document.getElementById("btnSave");
 const btnRender = document.getElementById("btnRender");
@@ -573,27 +600,36 @@ const tableWraps = {
 let charts = { combo:null, beans200:null, zips8:null, zips1:null, goods:null };
 let pdfCharts = { combo:null, beans200:null, zips8:null, zips1:null, goods:null };
 
-/** ✅ 操作ボタンの折りたたみ（保存〜＋グッズ） */
-const UI_KEY = "tullys-controls-collapsed-v1";
-const btnControlsToggle = document.getElementById("btnControlsToggle");
+/** Drawer */
+const drawer = document.getElementById("drawer");
+const backdrop = document.getElementById("drawerBackdrop");
+const btnDrawerOpen = document.getElementById("btnDrawerOpen");
+const btnDrawerOpen2 = document.getElementById("btnDrawerOpen2");
+const btnDrawerClose = document.getElementById("btnDrawerClose");
 
-function setControlsCollapsed(isCollapsed){
-  document.body.classList.toggle("controls-collapsed", !!isCollapsed);
-  if(btnControlsToggle){
-    btnControlsToggle.setAttribute("aria-expanded", String(!isCollapsed));
-  }
-  try{ localStorage.setItem(UI_KEY, isCollapsed ? "1" : "0"); }catch(e){}
+function openDrawer(){
+  document.body.classList.add("drawer-open","noscroll");
+  drawer.setAttribute("aria-hidden","false");
+  backdrop.setAttribute("aria-hidden","false");
+  // フォーカス先
+  setTimeout(()=> yearInput?.focus(), 0);
 }
-function loadControlsCollapsed(){
-  try{ return localStorage.getItem(UI_KEY) === "1"; }catch(e){ return false; }
+function closeDrawer(){
+  document.body.classList.remove("drawer-open","noscroll");
+  drawer.setAttribute("aria-hidden","true");
+  backdrop.setAttribute("aria-hidden","true");
+}
+function toggleDrawer(){
+  const isOpen = document.body.classList.contains("drawer-open");
+  isOpen ? closeDrawer() : openDrawer();
 }
 
 /** start */
 initDefaultYear();
-setControlsCollapsed(loadControlsCollapsed());
 wireEvents();
 openYear(getCurrentYear());
 renderAllCharts();
+syncYearBadge();
 
 /** 年 */
 function initDefaultYear(){ yearInput.value = String(new Date().getFullYear()); }
@@ -607,6 +643,12 @@ function requireYear(){
   if(!y){ toast("年を手入力してな（例：2025）"); yearInput.focus(); return null; }
   return y;
 }
+function syncYearBadge(){
+  const y = getCurrentYear();
+  yearBadge.textContent = y ? `年：${y}` : "年：—";
+}
+yearInput.addEventListener("input", syncYearBadge);
+
 function ensureYearState(year){
   if(!db.years) db.years = {};
   if(!db.years[year]){ db.years[year] = makeEmptyYearState(year); persistDB(); }
@@ -618,7 +660,7 @@ function makeEmptyYearState(year){
   const fixedZ1 = {}; FIXED.zips1.forEach(n => fixedZ1[n] = Array(12).fill(0));
   return {
     year,
-    salesK: Array(12).fill(0), // 売上（千円）
+    salesK: Array(12).fill(0),
     beans200: { fixed: fixedBeans, seasonals: [] },
     zips8: { fixed: fixedZ8, seasonals: [] },
     zips1: { fixed: fixedZ1, seasonals: [] },
@@ -667,6 +709,7 @@ function openYear(year){
   buildAllTables(year);
   loadYearToInputs(year);
   renderAllCharts();
+  syncYearBadge();
   toast(`${year}年を開いた`);
 }
 
@@ -682,7 +725,7 @@ function buildAllTables(year){
 function buildSalesTable(year){
   const st = db.years[year];
   const wrap = tableWraps.sales;
-  let html = `<table>
+  wrap.innerHTML = `<table>
     <thead><tr><th>（千円）</th>${MONTHS.map(m=>`<th>${m}</th>`).join("")}</tr></thead>
     <tbody>
       <tr data-rowtype="salesK">
@@ -693,7 +736,6 @@ function buildSalesTable(year){
         `).join("")}
       </tr>
     </tbody></table>`;
-  wrap.innerHTML = html;
 
   bindNumericUX(wrap);
 
@@ -850,12 +892,10 @@ function bindTableEventsForGoods(year){
   });
 }
 
-/** ✅ 数字入力UX：フォーカスで全選択（0消す手間を激減） */
+/** 数字入力UX：フォーカスで全選択（0消しストレス減） */
 function bindNumericUX(root){
   root.querySelectorAll('input.num-input').forEach(inp => {
-    inp.addEventListener("focus", () => {
-      requestAnimationFrame(() => inp.select());
-    });
+    inp.addEventListener("focus", () => requestAnimationFrame(() => inp.select()));
   });
 }
 
@@ -960,12 +1000,9 @@ function saveInputsToYear(year, opts={silent:false}){
   if(!opts.silent) toast("保存した");
 }
 
-/** 名前正規化 */
+/** 正規化 & 色 */
 function normalizeName(s){
-  return String(s || "")
-    .replace(/\u3000/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
+  return String(s || "").replace(/\u3000/g, " ").replace(/\s+/g, " ").trim();
 }
 function getColorForLabel(label){
   const n = normalizeName(label);
@@ -1144,17 +1181,13 @@ function renderBarMulti(canvasId, chartInstance, title, datasets, opt={}){
   });
 }
 
-/** ✅ ①専用：棒 + 売上折れ線（右軸）
- *  売上入力：千円
- *  表示：万（小数1桁）
- */
+/** ①専用：棒 + 売上折れ線（右軸：万 小数1桁） */
 function renderComboWithSales(canvasId, chartInstance, title, barDatasets, salesK, isPdf=false){
   const canvas = document.getElementById(canvasId);
   if(!canvas) return null;
   const ctx = canvas.getContext("2d");
   if(chartInstance) chartInstance.destroy();
 
-  // ✅ 右軸の余白を安定（PDFズレ対策）
   const widenY2 = {
     id: "widenY2",
     beforeLayout(chart){
@@ -1176,15 +1209,13 @@ function renderComboWithSales(canvasId, chartInstance, title, barDatasets, sales
   const line = {
     type: "line",
     label: "売上（万）",
-    data: Array.isArray(salesK) ? salesK : Array(12).fill(0), // 千円のまま持つ
+    data: Array.isArray(salesK) ? salesK : Array(12).fill(0), // 千円
     borderColor: "#000000",
     backgroundColor: "rgba(0,0,0,0)",
     pointBackgroundColor: "#000000",
     pointRadius: 3,
     tension: 0.25,
     yAxisID: "y2",
-
-    // ✅ 月ごとの数字ラベル（万 / 小数1桁）
     datalabels: {
       display: true,
       align: "top",
@@ -1192,7 +1223,7 @@ function renderComboWithSales(canvasId, chartInstance, title, barDatasets, sales
       offset: 4,
       color: "#000",
       formatter: (v) => {
-        const n = Number(v) || 0; // 千円
+        const n = Number(v) || 0;
         if(n <= 0) return "";
         return `${(n / 10).toFixed(1)}万`;
       },
@@ -1219,7 +1250,6 @@ function renderComboWithSales(canvasId, chartInstance, title, barDatasets, sales
           position: "right",
           beginAtZero: true,
           grid: { drawOnChartArea: false },
-          // ✅ 右軸表示も万（小数1桁）
           ticks: { callback: (v) => `${(Number(v)/10).toFixed(1)}` }
         }
       }
@@ -1369,18 +1399,21 @@ function addGoodsItem(year){
 
 /** イベント */
 function wireEvents(){
-  // ✅ 📶 操作トグル
-  if(btnControlsToggle){
-    btnControlsToggle.addEventListener("click", () => {
-      const now = document.body.classList.contains("controls-collapsed");
-      setControlsCollapsed(!now);
-      toast(!now ? "操作ボタンを省略した" : "操作ボタンを表示した");
-    });
-  }
+  btnDrawerOpen.addEventListener("click", openDrawer);
+  btnDrawerOpen2.addEventListener("click", openDrawer);
+  btnDrawerClose.addEventListener("click", closeDrawer);
+  backdrop.addEventListener("click", closeDrawer);
+
+  window.addEventListener("keydown", (e) => {
+    if(e.key === "Escape" && document.body.classList.contains("drawer-open")){
+      closeDrawer();
+    }
+  });
 
   btnLoadYear.addEventListener("click", () => {
     const y = requireYear(); if(!y) return;
     openYear(y);
+    closeDrawer();
   });
 
   btnSave.addEventListener("click", () => {
