@@ -362,6 +362,13 @@
         <button id="btnPdf" class="secondary" type="button">PDF出力（A4縦/2ページ）</button>
       </div>
 
+      <!-- ✅ JSON Backup / Restore -->
+      <div class="drawer-block">
+        <button id="btnExportJson" class="secondary" type="button">JSONバックアップ</button>
+        <input id="jsonFileInput" type="file" accept="application/json" style="display:none" />
+        <button id="btnImportJson" class="secondary" type="button">JSON復元</button>
+      </div>
+
       <div class="drawer-block">
         <button id="quickAddBeansSeasonal" class="secondary" type="button">＋豆シーズナル</button>
         <button id="quickAddZ8Seasonal" class="secondary" type="button">＋Z8シーズナル</button>
@@ -574,6 +581,11 @@ const btnSave = document.getElementById("btnSave");
 const btnRender = document.getElementById("btnRender");
 const btnClearYear = document.getElementById("btnClearYear");
 const btnPdf = document.getElementById("btnPdf");
+
+// ✅ JSON backup / restore
+const btnExportJson = document.getElementById("btnExportJson");
+const btnImportJson = document.getElementById("btnImportJson");
+const jsonFileInput = document.getElementById("jsonFileInput");
 
 const quickAdd = {
   beans: document.getElementById("quickAddBeansSeasonal"),
@@ -1377,6 +1389,40 @@ function addCanvasToPdf(doc, canvas, margin){
 }
 function wait(ms){ return new Promise(r => setTimeout(r, ms)); }
 
+/** JSONバックアップ / 復元 */
+function downloadJson(filename, obj){
+  const blob = new Blob([JSON.stringify(obj, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+function validateDbShape(candidate){
+  if(!candidate || typeof candidate !== "object") return false;
+  if(!candidate.years || typeof candidate.years !== "object") return false;
+  return true;
+}
+function mergeDbAndHydrate(candidate){
+  db = candidate;
+  if(!db.years) db.years = {};
+  persistDB();
+
+  const y = getCurrentYear();
+  if(y){
+    ensureYearState(y);
+    openYear(y);
+  }else{
+    renderAllCharts();
+  }
+}
+async function readFileAsText(file){
+  return await file.text();
+}
+
 /** 追加 */
 function addSeasonal(year, cat){
   ensureYearState(year);
@@ -1440,6 +1486,51 @@ function wireEvents(){
   });
 
   btnPdf.addEventListener("click", exportPdf2Pages);
+
+  // ✅ JSONバックアップ
+  btnExportJson?.addEventListener("click", () => {
+    const y = requireYear();
+    if(!y) return;
+
+    // 最新状態を保存してから吐く
+    saveInputsToYear(y, { silent:true });
+
+    const stamp = new Date().toISOString().slice(0,19).replace(/[:T]/g,"-");
+    downloadJson(`tullys_backup_${y}_${stamp}.json`, db);
+    toast("JSONバックアップ出したで");
+  });
+
+  // ✅ JSON復元
+  btnImportJson?.addEventListener("click", () => {
+    jsonFileInput?.click();
+  });
+
+  jsonFileInput?.addEventListener("change", async () => {
+    const file = jsonFileInput.files?.[0];
+    if(!file) return;
+
+    try{
+      const txt = await readFileAsText(file);
+      const parsed = JSON.parse(txt);
+
+      if(!validateDbShape(parsed)){
+        toast("このJSON、形式がちゃうっぽい");
+        return;
+      }
+
+      if(!confirm("JSON復元すると、今この端末のデータは上書きされるで。ええ？")) return;
+
+      mergeDbAndHydrate(parsed);
+      toast("復元できたで");
+      closeDrawer();
+    }catch(e){
+      console.warn(e);
+      toast("読み込み失敗した…JSON壊れてるかも");
+    }finally{
+      // 同じファイルをもう一回選んでも change が発火するように
+      jsonFileInput.value = "";
+    }
+  });
 
   addSeasonalButtons.beans200.addEventListener("click", () => { const y=requireYear(); if(y) addSeasonal(y,"beans200"); });
   addSeasonalButtons.zips8.addEventListener("click", () => { const y=requireYear(); if(y) addSeasonal(y,"zips8"); });
